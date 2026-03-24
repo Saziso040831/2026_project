@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Lost Items · DUT Lost & Found</title>
+    <title>All Found Items · DUT Lost & Found</title>
     <!-- Poppins font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +23,6 @@
             min-height: 100vh;
         }
 
-        /* Subtle Pattern Overlay */
         body::before {
             content: '';
             position: fixed;
@@ -39,7 +38,6 @@
             z-index: 0;
         }
 
-        /* Soft Blue Accent Line */
         body::after {
             content: '';
             position: fixed;
@@ -51,7 +49,6 @@
             z-index: 1000;
         }
 
-        /* Navigation */
         .navbar {
             background: #111111;
             padding: 1rem 2rem;
@@ -127,7 +124,6 @@
             border: 1px solid #333333;
         }
 
-        /* Main Content */
         .container {
             max-width: 1200px;
             margin: 2rem auto;
@@ -185,6 +181,51 @@
 
         .stat-item small {
             color: #888888;
+        }
+
+        /* Message Box for No Lost Items */
+        .info-message {
+            background: linear-gradient(135deg, #1a2a3a, #0a1a2a);
+            border-left: 4px solid #ffc107;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .info-message i {
+            font-size: 3rem;
+            color: #ffc107;
+            margin-bottom: 1rem;
+        }
+
+        .info-message h3 {
+            color: #ffffff;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-message p {
+            color: #cccccc;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-message .btn-report {
+            background: #4a90e2;
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .info-message .btn-report:hover {
+            background: #3a7bc8;
+            transform: translateY(-2px);
         }
 
         /* Search Section */
@@ -320,7 +361,7 @@
             border-radius: 50px;
             font-size: 0.75rem;
             font-weight: 600;
-            background: #dc3545;
+            background: #28a745;
             color: white;
         }
 
@@ -404,8 +445,8 @@
             font-size: 0.8rem;
         }
 
-        .status-pending {
-            color: #ffc107;
+        .status-available {
+            color: #28a745;
         }
 
         .btn-view {
@@ -451,7 +492,6 @@
             border-color: #4a90e2;
         }
 
-        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 4rem;
@@ -511,7 +551,6 @@
             background: #1a2a3a;
         }
 
-        /* DUT Footer */
         .dut-footer {
             margin-top: 3rem;
             padding: 1.5rem;
@@ -556,7 +595,6 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="logo">
             <i class="fas fa-university"></i>
@@ -564,8 +602,8 @@
         </div>
         <div class="nav-links">
             <a href="/dashboard" class="nav-link">Dashboard</a>
-            <a href="/all-lost" class="nav-link active">Lost Items</a>
-            <a href="/all-found" class="nav-link">Found Items</a>
+            <a href="/all-lost" class="nav-link">Lost Items</a>
+            <a href="/all-found" class="nav-link active">Found Items</a>
             <a href="/report-lost" class="nav-link">Report Lost</a>
             <a href="/report-found" class="nav-link">Report Found</a>
         </div>
@@ -577,19 +615,20 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <div class="container">
         <div class="page-header">
             <h1>
-                <i class="fas fa-archive" style="color: #4a90e2; margin-right: 10px;"></i> All Lost Items
+                <i class="fas fa-hand-holding-heart" style="color: #28a745; margin-right: 10px;"></i> All Found Items
             </h1>
-            <p>Browse through all lost items reported by other students</p>
+            <p>Found items that match your lost item categories</p>
+            
+            {% if has_lost_items %}
             <div class="stats">
                 <div class="stat-item">
                     <i class="fas fa-box-open"></i>
                     <div>
                         <span>{{ total_items }}</span>
-                        <small>Total Lost Items</small>
+                        <small>Found Items</small>
                     </div>
                 </div>
                 <div class="stat-item">
@@ -600,18 +639,40 @@
                     </div>
                 </div>
                 <div class="stat-item">
-                    <i class="fas fa-clock"></i>
+                    <i class="fas fa-check-circle"></i>
                     <div>
-                        <span>{{ pending_items }}</span>
-                        <small>Pending</small>
+                        <span>{{ available_items }}</span>
+                        <small>Available</small>
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
+        
+{% if not has_lost_items %}
+<div class="warning-box" style="background: #1a2a3a; border-left: 4px solid #ffc107; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+    <i class="fas fa-info-circle" style="color: #ffc107; margin-right: 10px;"></i>
+    <strong style="color: white;">You haven't reported any lost items yet.</strong>
+    <p style="color: #cccccc; margin-top: 5px;">To see found items that might match yours, please <a href="/report-lost" style="color: #4a90e2;">report a lost item</a> first. Found items shown are based on the categories of items you've lost.</p>
+</div>
+{% endif %}
 
-        <!-- Search Section -->
+        <!-- Message for users who haven't reported any lost items -->
+        {% if not has_lost_items %}
+        <div class="info-message">
+            <i class="fas fa-info-circle"></i>
+            <h3>Only users who have reported lost items can view found items</h3>
+            <p>To see found items that might match what you've lost, please report a lost item first. Found items shown are based on the categories of items you've lost.</p>
+            <a href="/report-lost" class="btn-report">
+                <i class="fas fa-pen"></i> Report a Lost Item
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Only show search and items if user has lost items -->
+        {% if has_lost_items %}
         <div class="search-section">
-            <form method="GET" action="/all-lost" id="searchForm">
+            <form method="GET" action="/all-found" id="searchForm">
                 <div class="search-box">
                     <div class="search-input">
                         <i class="fas fa-search"></i>
@@ -623,15 +684,9 @@
                 <div class="filter-group">
                     <select name="category" class="filter-select" onchange="this.form.submit()">
                         <option value="">All Categories</option>
-                        <option value="electronics" {% if category == 'electronics' %}selected{% endif %}>Electronics</option>
-                        <option value="accessories" {% if category == 'accessories' %}selected{% endif %}>Accessories</option>
-                        <option value="keys" {% if category == 'keys' %}selected{% endif %}>Keys</option>
-                        <option value="documents" {% if category == 'documents' %}selected{% endif %}>Documents</option>
-                        <option value="clothing" {% if category == 'clothing' %}selected{% endif %}>Clothing</option>
-                        <option value="bags" {% if category == 'bags' %}selected{% endif %}>Bags</option>
-                        <option value="books" {% if category == 'books' %}selected{% endif %}>Books</option>
-                        <option value="stationery" {% if category == 'stationery' %}selected{% endif %}>Stationery</option>
-                        <option value="tech" {% if category == 'tech' %}selected{% endif %}>Tech Accessories</option>
+                        {% for cat in lost_categories %}
+                        <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ cat|capitalize }}</option>
+                        {% endfor %}
                     </select>
                     
                     <select name="campus" class="filter-select" onchange="this.form.submit()">
@@ -650,7 +705,6 @@
             </form>
         </div>
 
-        <!-- Items Grid -->
         <div class="items-grid">
             {% for item in items %}
             <div class="item-card">
@@ -660,7 +714,7 @@
                     {% else %}
                         <i class="fas fa-box placeholder-icon"></i>
                     {% endif %}
-                    <span class="item-badge">LOST</span>
+                    <span class="item-badge">FOUND</span>
                 </div>
                 <div class="item-content">
                     <div class="item-header">
@@ -669,7 +723,7 @@
                     </div>
                     <div class="item-meta">
                         <span><i class="fas fa-map-marker-alt"></i> {{ item.location }}</span>
-                        <span><i class="fas fa-calendar"></i> {{ item.date_lost }}</span>
+                        <span><i class="fas fa-calendar"></i> {{ item.date_found }}</span>
                     </div>
                     <div class="item-description">
                         {{ item.description }}
@@ -679,24 +733,23 @@
                     </div>
                     <div class="item-footer">
                         <div class="item-status">
-                            <i class="fas fa-clock status-pending"></i>
+                            <i class="fas fa-check-circle status-available"></i>
                             <span>{{ item.status }}</span>
                         </div>
-                        <a href="/item/lost/{{ item.id }}" class="btn-view">View Details</a>
+                        <a href="/item/found/{{ item.id }}" class="btn-view">View Details</a>
                     </div>
                 </div>
             </div>
             {% else %}
             <div class="empty-state">
-                <i class="fas fa-box-open"></i>
-                <h3>No lost items found</h3>
-                <p>Try adjusting your search or filters</p>
-                <a href="/all-lost" class="btn btn-outline">Clear Filters</a>
+                <i class="fas fa-hand-holding-heart"></i>
+                <h3>No found items match your lost items</h3>
+                <p>Try adjusting your search or check back later</p>
+                <a href="/all-found" class="btn btn-outline">Clear Filters</a>
             </div>
             {% endfor %}
         </div>
 
-        <!-- Pagination -->
         {% if total_pages > 1 %}
         <div class="pagination">
             {% if page > 1 %}
@@ -720,8 +773,8 @@
             {% endif %}
         </div>
         {% endif %}
+        {% endif %}
 
-        <!-- DUT Footer -->
         <div class="dut-footer">
             <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 1rem;">
                 <i class="fas fa-university" style="font-size: 1.5rem; color: #4a90e2;"></i>
