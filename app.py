@@ -571,7 +571,8 @@ def dashboard():
                            ORDER BY c.created_at DESC''', 
                        (user['id'],)).fetchall()
     
-    # Get relevant found items
+    # Get relevant found items that match user's lost items (by category)
+    # EXCLUDE items that have already been claimed by this user
     lost_categories = [item['category'] for item in lost_items]
     if lost_categories:
         placeholders = ','.join(['?'] * len(set(lost_categories)))
@@ -579,12 +580,16 @@ def dashboard():
             SELECT * FROM found_items 
             WHERE status = 'available' 
             AND category IN ({placeholders})
+            AND id NOT IN (
+                SELECT item_id FROM claims 
+                WHERE claimant_id = ? AND item_type = 'found'
+            )
             ORDER BY created_at DESC
-        ''', tuple(set(lost_categories))).fetchall()
+        ''', tuple(set(lost_categories)) + (user['id'],)).fetchall()
     else:
         relevant_found_items = []
     
-    # Get potential matches
+    # Get potential matches with confidence score
     matches_list = []
     for lost in lost_items:
         for found in relevant_found_items:
@@ -601,6 +606,7 @@ def dashboard():
                     'confidence': score
                 })
     
+    # Remove duplicates based on found_id
     seen = set()
     unique_matches = []
     for match in matches_list:
@@ -608,10 +614,12 @@ def dashboard():
             seen.add(match['found_id'])
             unique_matches.append(match)
     
+    # Sort by confidence score
     unique_matches.sort(key=lambda x: x['confidence'], reverse=True)
     
-    # Create notifications for new matches
+    # Create notifications for new matches (only for items not already claimed)
     for match in unique_matches[:10]:
+        # Check if notification already exists for this match
         existing = conn.execute('''SELECT id FROM notifications 
                                    WHERE user_id = ? 
                                    AND type = 'match' 
@@ -881,7 +889,7 @@ def admin_lost_items():
     
     conn.close()
     
-    total_pages = (total + per_page - 1) // per_page
+    total_pages = (total + per_page - 1) // per_page if total > 0 else 1
     
     return render_template('admin_lost_items.html',
                          user=session['user'],
@@ -962,7 +970,7 @@ def admin_found_items():
     
     conn.close()
     
-    total_pages = (total + per_page - 1) // per_page
+    total_pages = (total + per_page - 1) // per_page if total > 0 else 1
     
     return render_template('admin_found_items.html',
                          user=session['user'],
@@ -982,6 +990,7 @@ def admin_found_items():
                          available_items=available_items,
                          resolved_found_count=resolved_found_count,
                          now=datetime.now())
+
 @app.route('/admin/pending-claims')
 def admin_pending_claims():
     if 'user' not in session or session['user']['role'] != 'admin':
@@ -1150,6 +1159,7 @@ def admin_history():
                          pending_claims=pending_claims,
                          resolved_count=resolved_count,
                          now=now)
+
 @app.route('/admin/claim/<int:claim_id>/<string:action>', methods=['POST'])
 def admin_handle_claim(claim_id, action):
     if 'user' not in session or session['user']['role'] != 'admin':
@@ -1163,65 +1173,154 @@ def admin_handle_claim(claim_id, action):
     conn = get_db()
     status = 'approved' if action == 'approve' else 'rejected'
     
-    # First get the claim details
-    claim = conn.execute('''SELECT * FROM claims WHERE id = ?''', (claim_id,)).fetchone()
-    
-    if not claim:
-        flash("Claim not found!", "danger")
-        conn.close()
-        return redirect(url_for('admin_dashboard'))
-    
-    claim_dict = dict(claim)
-    
-    # Update claim status
-    conn.execute('''UPDATE claims SET status = ?, reviewed_by = ?, reviewed_at = CURRENT_TIMESTAMP
-                    WHERE id = ?''', (status, session['user']['id'], claim_id))
-    
-    if status == 'approved':
-        # Mark the found item as resolved
-        conn.execute('''UPDATE found_items SET status = 'resolved', resolved_at = ?, resolved_by = ?
-                        WHERE id = ?''', (datetime.now().isoformat(), session['user']['id'], claim_dict['item_id']))
+    try:
+        # First get the claim details
+        claim = conn.execute('''SELECT * FROM claims WHERE id = ?''', (claim_id,)).fetchone()
         
-        # Also mark any matching lost item if it exists
-        if claim_dict['item_type'] == 'found':
-            # Find a lost item that matches this found item
-            matching_lost = conn.execute('''
-                SELECT id FROM lost_items 
-                WHERE user_id = ? AND status = 'pending'
-                ORDER BY created_at DESC LIMIT 1
-            ''', (claim_dict['claimant_id'],)).fetchone()
+        if not claim:
+            flash("Claim not found!", "danger")
+            conn.close()
+            return redirect(url_for('admin_dashboard'))
+        
+        claim_dict = dict(claim)
+        
+        # Update claim status
+        conn.execute('''UPDATE claims SET status = ?, reviewed_by = ?, reviewed_at = CURRENT_TIMESTAMP
+                        WHERE id = ?''', (status, session['user']['id'], claim_id))
+        
+        if status == 'approved':
+            current_time = datetime.now().isoformat()
             
-            if matching_lost:
-                conn.execute('''UPDATE lost_items SET status = 'resolved', resolved_at = ?, resolved_by = ?
-                                WHERE id = ?''', (datetime.now().isoformat(), session['user']['id'], matching_lost['id']))
+            # For a claim on a found item (someone is claiming a found item)
+            if claim_dict['item_type'] == 'found':
+                # Get the found item details
+                found_item = conn.execute('''SELECT * FROM found_items WHERE id = ?''', 
+                                          (claim_dict['item_id'],)).fetchone()
+                
+                if found_item:
+                    # Mark the found item as resolved
+                    conn.execute('''UPDATE found_items 
+                                    SET status = 'resolved', 
+                                        resolved_at = ?, 
+                                        resolved_by = ?
+                                    WHERE id = ?''', 
+                                 (current_time, session['user']['id'], claim_dict['item_id']))
+                    
+                    # Add to history
+                    conn.execute('''INSERT INTO item_history 
+                                    (item_id, item_type, item_name, category, found_by_id, claimed_by_id, resolved_at, resolved_by, notes)
+                                    SELECT ?, 'found', item_name, category, user_id, ?, ?, ?, ?
+                                    FROM found_items WHERE id = ?''', 
+                                 (claim_dict['item_id'], claim_dict['claimant_id'], current_time, 
+                                  session['user']['id'], f"Claim approved by admin - Item returned to owner", claim_dict['item_id']))
+                    
+                    # Also find and mark the matching lost item
+                    lost_items = conn.execute('''
+                        SELECT id, item_name, category FROM lost_items 
+                        WHERE user_id = ? AND status = 'pending'
+                        ORDER BY created_at DESC LIMIT 1
+                    ''', (claim_dict['claimant_id'],)).fetchone()
+                    
+                    if lost_items:
+                        # Mark the lost item as resolved
+                        conn.execute('''UPDATE lost_items 
+                                        SET status = 'resolved', 
+                                            resolved_at = ?, 
+                                            resolved_by = ?
+                                        WHERE id = ?''', 
+                                     (current_time, session['user']['id'], lost_items['id']))
+                        
+                        # Add lost item to history
+                        conn.execute('''INSERT INTO item_history 
+                                        (item_id, item_type, item_name, category, lost_by_id, claimed_by_id, resolved_at, resolved_by, notes)
+                                        VALUES (?, 'lost', ?, ?, ?, ?, ?, ?, ?)''', 
+                                     (lost_items['id'], lost_items['item_name'], lost_items['category'], 
+                                      claim_dict['claimant_id'], found_item['user_id'], current_time, 
+                                      session['user']['id'], f"Matched with found item: {found_item['item_name']}"))
+            
+            # For a claim on a lost item (someone found a lost item)
+            else:
+                # Get the lost item details
+                lost_item = conn.execute('''SELECT * FROM lost_items WHERE id = ?''', 
+                                         (claim_dict['item_id'],)).fetchone()
+                
+                if lost_item:
+                    # Mark the lost item as resolved
+                    conn.execute('''UPDATE lost_items 
+                                    SET status = 'resolved', 
+                                        resolved_at = ?, 
+                                        resolved_by = ?
+                                    WHERE id = ?''', 
+                                 (current_time, session['user']['id'], claim_dict['item_id']))
+                    
+                    # Add to history
+                    conn.execute('''INSERT INTO item_history 
+                                    (item_id, item_type, item_name, category, lost_by_id, claimed_by_id, resolved_at, resolved_by, notes)
+                                    SELECT ?, 'lost', item_name, category, user_id, ?, ?, ?, ?
+                                    FROM lost_items WHERE id = ?''', 
+                                 (claim_dict['item_id'], claim_dict['claimant_id'], current_time, 
+                                  session['user']['id'], f"Claim approved by admin - Item found and returned", claim_dict['item_id']))
+                    
+                    # Also find and mark the matching found item
+                    found_items = conn.execute('''
+                        SELECT id, item_name, category FROM found_items 
+                        WHERE user_id = ? AND status = 'available'
+                        ORDER BY created_at DESC LIMIT 1
+                    ''', (claim_dict['claimant_id'],)).fetchone()
+                    
+                    if found_items:
+                        # Mark the found item as resolved
+                        conn.execute('''UPDATE found_items 
+                                        SET status = 'resolved', 
+                                            resolved_at = ?, 
+                                            resolved_by = ?
+                                        WHERE id = ?''', 
+                                     (current_time, session['user']['id'], found_items['id']))
+                        
+                        # Add found item to history
+                        conn.execute('''INSERT INTO item_history 
+                                        (item_id, item_type, item_name, category, found_by_id, claimed_by_id, resolved_at, resolved_by, notes)
+                                        VALUES (?, 'found', ?, ?, ?, ?, ?, ?, ?)''', 
+                                     (found_items['id'], found_items['item_name'], found_items['category'], 
+                                      claim_dict['claimant_id'], lost_item['user_id'], current_time, 
+                                      session['user']['id'], f"Matched with lost item: {lost_item['item_name']}"))
+            
+            # Send notification to claimant
+            conn.execute('''INSERT INTO notifications (user_id, type, message, created_at, is_read)
+                            VALUES (?, ?, ?, ?, 0)''',
+                         (claim_dict['claimant_id'], 'claim_approved', 
+                          'Your claim has been approved! You can now arrange pickup with the finder.', 
+                          datetime.now().isoformat()))
+            
+            # Send notification to the owner of the found item
+            if claim_dict['item_type'] == 'found':
+                found_item = conn.execute('''SELECT user_id FROM found_items WHERE id = ?''', 
+                                          (claim_dict['item_id'],)).fetchone()
+                if found_item:
+                    conn.execute('''INSERT INTO notifications (user_id, type, message, created_at, is_read)
+                                    VALUES (?, ?, ?, ?, 0)''',
+                                 (found_item['user_id'], 'claim_approved', 
+                                  f'Your found item has been claimed and approved. The owner will contact you.', 
+                                  datetime.now().isoformat()))
+            
+            try:
+                send_claim_approved_notification(claim_id)
+            except Exception as e:
+                print(f"Email error: {e}")
         
-        # Add to history
-        conn.execute('''INSERT INTO item_history (item_id, item_type, item_name, category, 
-                       claimed_by_id, resolved_at, resolved_by, notes)
-                       SELECT ?, ?, ?, ?, ?, ?, ?, ?
-                       FROM found_items WHERE id = ?''', 
-                    (claim_dict['item_id'], claim_dict['item_type'], 
-                     'Item', 'Category', claim_dict['claimant_id'],
-                     datetime.now().isoformat(), session['user']['id'], 
-                     f"Claim approved by admin", claim_dict['item_id']))
+        conn.commit()
+        flash(f"Claim {status} successfully!", "success")
         
-        # Send notification
-        conn.execute('''INSERT INTO notifications (user_id, type, message, created_at, is_read)
-                        VALUES (?, ?, ?, ?, 0)''',
-                     (claim_dict['claimant_id'], 'claim_approved', 
-                      'Your claim has been approved! You can now arrange pickup.', 
-                      datetime.now().isoformat()))
-        
-        try:
-            send_claim_approved_notification(claim_id)
-        except Exception as e:
-            print(f"Email error: {e}")
+    except Exception as e:
+        conn.rollback()
+        flash(f"Error processing claim: {str(e)}", "danger")
+        print(f"Error: {e}")
     
-    conn.commit()
-    conn.close()
+    finally:
+        conn.close()
     
-    flash(f"Claim {status}!", "success")
     return redirect(url_for('admin_pending_claims'))
+
 @app.route('/admin/delete/lost/<int:item_id>', methods=['POST'])
 def admin_delete_lost(item_id):
     if 'user' not in session or session['user']['role'] != 'admin':
@@ -1361,34 +1460,202 @@ def all_lost_items():
         flash("Please login to view items", "warning")
         return redirect(url_for('login'))
     
+    # Get search parameters
+    query = request.args.get('q', '').strip()
+    category = request.args.get('category', '')
+    campus = request.args.get('campus', '')
+    sort = request.args.get('sort', 'newest')
+    page = int(request.args.get('page', 1))
+    per_page = 12
+    
     conn = get_db()
-    items = conn.execute('''SELECT li.*, u.full_name as reporter_name 
-                            FROM lost_items li 
-                            JOIN users u ON li.user_id = u.id 
-                            ORDER BY li.created_at DESC''').fetchall()
+    
+    # Build query
+    sql = "SELECT li.*, u.full_name as reporter_name, u.student_number FROM lost_items li JOIN users u ON li.user_id = u.id WHERE 1=1"
+    params = []
+    
+    if query:
+        sql += " AND (li.item_name LIKE ? OR li.description LIKE ? OR li.location LIKE ?)"
+        search_term = f'%{query}%'
+        params.extend([search_term, search_term, search_term])
+    
+    if category:
+        sql += " AND li.category = ?"
+        params.append(category)
+    
+    if campus:
+        sql += " AND li.location LIKE ?"
+        params.append(f'%{campus}%')
+    
+    # Get total count
+    count_sql = sql.replace("li.*, u.full_name as reporter_name, u.student_number", "COUNT(*) as count")
+    total = conn.execute(count_sql, params).fetchone()['count']
+    
+    # Add sorting
+    if sort == 'newest':
+        sql += " ORDER BY li.created_at DESC"
+    else:
+        sql += " ORDER BY li.created_at ASC"
+    
+    # Add pagination
+    sql += " LIMIT ? OFFSET ?"
+    params.extend([per_page, (page-1)*per_page])
+    
+    items = conn.execute(sql, params).fetchall()
+    
+    # Get stats
+    unique_reporters = conn.execute("SELECT COUNT(DISTINCT user_id) FROM lost_items").fetchone()[0]
+    pending_items = conn.execute("SELECT COUNT(*) FROM lost_items WHERE status = 'pending'").fetchone()[0]
+    
     conn.close()
+    
+    total_pages = (total + per_page - 1) // per_page
     
     return render_template('all_lost_items.html',
                          user=session['user'],
-                         items=[dict(item) for item in items])
-
+                         items=[dict(item) for item in items],
+                         total_items=total,
+                         unique_reporters=unique_reporters,
+                         pending_items=pending_items,
+                         query=query,
+                         category=category,
+                         campus=campus,
+                         sort=sort,
+                         page=page,
+                         total_pages=total_pages)
 @app.route('/all-found')
 def all_found_items():
     if 'user' not in session:
         flash("Please login to view items", "warning")
         return redirect(url_for('login'))
     
+    user_id = session['user']['id']
+    
+    # Get search parameters
+    query = request.args.get('q', '').strip()
+    category = request.args.get('category', '')
+    campus = request.args.get('campus', '')
+    sort = request.args.get('sort', 'newest')
+    page = int(request.args.get('page', 1))
+    per_page = 12
+    
     conn = get_db()
-    items = conn.execute('''SELECT fi.*, u.full_name as reporter_name 
-                            FROM found_items fi 
-                            JOIN users u ON fi.user_id = u.id 
-                            WHERE fi.status = 'available'
-                            ORDER BY fi.created_at DESC''').fetchall()
+    
+    # First, get user's lost items categories
+    user_lost_items = conn.execute('''
+        SELECT DISTINCT category 
+        FROM lost_items 
+        WHERE user_id = ? AND status = 'pending'
+    ''', (user_id,)).fetchall()
+    
+    lost_categories = [item['category'] for item in user_lost_items]
+    
+    # If user hasn't reported any lost items, show message
+    if not lost_categories:
+        conn.close()
+        return render_template('all_found_items.html',
+                             user=session['user'],
+                             items=[],
+                             total_items=0,
+                             unique_reporters=0,
+                             available_items=0,
+                             query=query,
+                             category=category,
+                             campus=campus,
+                             sort=sort,
+                             page=page,
+                             total_pages=0,
+                             has_lost_items=False,
+                             lost_categories=[])
+    
+    # Build query - ONLY show found items that match user's lost categories
+    placeholders = ','.join(['?'] * len(lost_categories))
+    sql = f"""
+        SELECT fi.*, u.full_name as reporter_name, u.student_number
+        FROM found_items fi 
+        JOIN users u ON fi.user_id = u.id 
+        WHERE fi.status = 'available'
+        AND fi.category IN ({placeholders})
+    """
+    params = lost_categories.copy()
+    
+    # Add search filters
+    if query:
+        sql += " AND (fi.item_name LIKE ? OR fi.description LIKE ? OR fi.location LIKE ?)"
+        search_term = f'%{query}%'
+        params.extend([search_term, search_term, search_term])
+    
+    if category and category in lost_categories:
+        sql += " AND fi.category = ?"
+        params.append(category)
+    
+    if campus:
+        sql += " AND fi.location LIKE ?"
+        params.append(f'%{campus}%')
+    
+    # Get total count for pagination
+    count_sql = sql.replace("fi.*, u.full_name as reporter_name, u.student_number", "COUNT(*) as count")
+    total = conn.execute(count_sql, params).fetchone()['count']
+    
+    # Add sorting
+    if sort == 'newest':
+        sql += " ORDER BY fi.created_at DESC"
+    else:
+        sql += " ORDER BY fi.created_at DESC"
+    
+    # Add pagination
+    sql += " LIMIT ? OFFSET ?"
+    params.extend([per_page, (page-1)*per_page])
+    
+    items = conn.execute(sql, params).fetchall()
+    
+    # Get stats
+    if lost_categories:
+        placeholders = ','.join(['?'] * len(lost_categories))
+        stats_sql = f"""
+            SELECT COUNT(DISTINCT fi.user_id) as unique_reporters,
+                   COUNT(*) as available_items
+            FROM found_items fi 
+            WHERE fi.status = 'available'
+            AND fi.category IN ({placeholders})
+        """
+        stats_params = lost_categories.copy()
+        
+        if query:
+            stats_sql += " AND (fi.item_name LIKE ? OR fi.description LIKE ? OR fi.location LIKE ?)"
+            search_term = f'%{query}%'
+            stats_params.extend([search_term, search_term, search_term])
+        
+        if campus:
+            stats_sql += " AND fi.location LIKE ?"
+            stats_params.append(f'%{campus}%')
+        
+        stats = conn.execute(stats_sql, stats_params).fetchone()
+        unique_reporters = stats['unique_reporters']
+        available_items = stats['available_items']
+    else:
+        unique_reporters = 0
+        available_items = 0
+    
     conn.close()
+    
+    total_pages = (total + per_page - 1) // per_page
     
     return render_template('all_found_items.html',
                          user=session['user'],
-                         items=[dict(item) for item in items])
+                         items=[dict(item) for item in items],
+                         total_items=total,
+                         unique_reporters=unique_reporters,
+                         available_items=available_items,
+                         query=query,
+                         category=category,
+                         campus=campus,
+                         sort=sort,
+                         page=page,
+                         total_pages=total_pages,
+                         has_lost_items=True,
+                         lost_categories=lost_categories,
+                         lost_items_count=len(user_lost_items))
 
 @app.route('/my-lost-items')
 def my_lost_items():
@@ -1439,16 +1706,23 @@ def view_matches():
     
     conn = get_db()
     
-    # Get user's lost items
+    # Get user's lost items that are still pending (not resolved)
     lost_items = conn.execute('''SELECT * FROM lost_items 
                                   WHERE user_id = ? AND status = 'pending'
                                   ORDER BY created_at DESC''', 
                               (user_id,)).fetchall()
     
-    # Get available found items
-    found_items = conn.execute('''SELECT * FROM found_items 
-                                   WHERE status = 'available'
-                                   ORDER BY created_at DESC''').fetchall()
+    # Get available found items (not claimed/resolved)
+    # Also exclude items that have been claimed by this user
+    found_items = conn.execute('''SELECT fi.* 
+                                   FROM found_items fi
+                                   WHERE fi.status = 'available'
+                                   AND fi.id NOT IN (
+                                       SELECT item_id FROM claims 
+                                       WHERE claimant_id = ? AND item_type = 'found'
+                                   )
+                                   ORDER BY fi.created_at DESC''', 
+                               (user_id,)).fetchall()
     
     matches = []
     high_confidence = 0
@@ -1596,6 +1870,7 @@ def submit_claim(item_type, item_id):
     
     conn = get_db()
     
+    # Check if claim already exists
     existing = conn.execute('''SELECT * FROM claims 
                                 WHERE item_id = ? AND item_type = ? AND claimant_id = ?''',
                              (item_id, item_type, claimant_id)).fetchone()
@@ -1605,6 +1880,21 @@ def submit_claim(item_type, item_id):
         flash("You have already submitted a claim for this item", "danger")
         return redirect(url_for('view_item', item_type=item_type, item_id=item_id))
     
+    # Check if the item is still available
+    if item_type == 'found':
+        item = conn.execute("SELECT * FROM found_items WHERE id = ? AND status = 'available'", (item_id,)).fetchone()
+        if not item:
+            conn.close()
+            flash("This item has already been claimed or is no longer available", "danger")
+            return redirect(url_for('dashboard'))
+    else:
+        item = conn.execute("SELECT * FROM lost_items WHERE id = ? AND status = 'pending'", (item_id,)).fetchone()
+        if not item:
+            conn.close()
+            flash("This item has already been resolved", "danger")
+            return redirect(url_for('dashboard'))
+    
+    # Create claim
     conn.execute('''INSERT INTO claims (item_id, item_type, claimant_id, message)
                     VALUES (?, ?, ?, ?)''',
                  (item_id, item_type, claimant_id, message))
