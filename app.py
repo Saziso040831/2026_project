@@ -6,12 +6,14 @@ import os
 import sqlite3
 import traceback
 import base64
+from reward import reward_bp, db
 from werkzeug.utils import secure_filename
 from PIL import Image
 from io import BytesIO
 from flask_mail import Mail, Message
 
 app = Flask(__name__)
+db.init_app(app)
 app.secret_key = secrets.token_hex(16)
 
 # Configuration for file uploads
@@ -1952,3 +1954,4 @@ def logout():
 
 if __name__ == "__main__":
     app.run(debug=True)
+app.register_blueprint(reward_bp)
