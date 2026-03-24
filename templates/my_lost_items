@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Lost Items · DUT Lost & Found</title>
+    <!-- Poppins font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: #111111;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+            color: #4a90e2;
+        }
+
+        .logo span {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #cccccc;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #1a1a1a;
+            color: #4a90e2;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-name {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4a90e2;
+            border: 1px solid #333333;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            color: #ffffff;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-header h1 i {
+            color: #dc3545;
+        }
+
+        .page-header p {
+            color: #888888;
+        }
+
+        /* Items Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .item-card {
+            background: #111111;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid #2a2a2a;
+            transition: 0.2s;
+        }
+
+        .item-card:hover {
+            transform: translateY(-3px);
+            border-color: #dc3545;
+        }
+
+        .item-image {
+            height: 180px;
+            background: #1a1a1a;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-image .placeholder-icon {
+            font-size: 3rem;
+            color: #444444;
+        }
+
+        .item-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #dc3545;
+            color: white;
+        }
+
+        .item-content {
+            padding: 1.2rem;
+        }
+
+        .item-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            color: #888888;
+        }
+
+        .item-meta i {
+            margin-right: 4px;
+            color: #dc3545;
+        }
+
+        .item-description {
+            color: #aaaaaa;
+            font-size: 0.85rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.8rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .item-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+        }
+
+        .status-pending {
+            color: #ffc107;
+        }
+
+        .btn-view {
+            background: #1a1a1a;
+            color: #dc3545;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: 0.2s;
+            border: 1px solid #333333;
+        }
+
+        .btn-view:hover {
+            border-color: #dc3545;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            background: #111111;
+            border-radius: 15px;
+            border: 1px dashed #dc3545;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #dc3545;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #888888;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c82333;
+        }
+
+        .dut-footer {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: #111111;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #2a2a2a;
+        }
+
+        .dut-footer p {
+            color: #888888;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-university"></i>
+            <span>DUT Lost & Found</span>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/my-lost-items" class="nav-link active">My Lost Items</a>
+            <a href="/my-found-items" class="nav-link">My Found Items</a>
+            <a href="/report-lost" class="nav-link">Report Lost</a>
+            <a href="/report-found" class="nav-link">Report Found</a>
+        </div>
+        <div class="user-info">
+            <span class="user-name">{{ user.full_name }}</span>
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-archive"></i> My Lost Items</h1>
+            <p>Items you have reported as lost</p>
+        </div>
+
+        <div class="items-grid">
+            {% for item in lost_items %}
+            <div class="item-card">
+                <div class="item-image">
+                    {% if item.image_path %}
+                        <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.item_name }}">
+                    {% else %}
+                        <i class="fas fa-box placeholder-icon"></i>
+                    {% endif %}
+                    <span class="item-badge">LOST</span>
+                </div>
+                <div class="item-content">
+                    <div class="item-title">{{ item.item_name }}</div>
+                    <div class="item-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> {{ item.location }}</span>
+                        <span><i class="fas fa-calendar"></i> {{ item.date_lost }}</span>
+                    </div>
+                    <div class="item-description">
+                        {{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}
+                    </div>
+                    <div class="item-footer">
+                        <div class="item-status">
+                            <i class="fas fa-clock status-pending"></i>
+                            <span>{{ item.status|capitalize }}</span>
+                        </div>
+                        <a href="/item/lost/{{ item.id }}" class="btn-view">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <h3>No lost items reported</h3>
+                <p>You haven't reported any lost items yet.</p>
+                <a href="/report-lost" class="btn btn-primary">Report a Lost Item</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="dut-footer">
+            <p><i class="fas fa-copyright"></i> 2026 DUT Lost and Found</p>
+        </div>
+    </div>
+</body>
+</html>

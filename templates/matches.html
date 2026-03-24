@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potential Matches · DUT Lost & Found</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #111111;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+            color: #4a90e2;
+        }
+
+        .logo span {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #cccccc;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #1a1a1a;
+            color: #4a90e2;
+        }
+
+        .nav-link.active {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            color: #ffffff;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-header h1 i {
+            color: #4a90e2;
+        }
+
+        .page-header p {
+            color: #888888;
+        }
+
+        .match-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background: #111111;
+            border-radius: 15px;
+            border: 1px solid #2a2a2a;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #4a90e2;
+        }
+
+        .stat-info h3 {
+            color: #ffffff;
+            font-size: 1.2rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .stat-info p {
+            color: #888888;
+            font-size: 0.85rem;
+        }
+
+        .filters-section {
+            background: #111111;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #2a2a2a;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-select {
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 50px;
+            padding: 0.6rem 1.5rem;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            flex: 1;
+            min-width: 150px;
+            cursor: pointer;
+        }
+
+        .matches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .match-card {
+            background: #111111;
+            border-radius: 20px;
+            border: 1px solid #2a2a2a;
+            overflow: hidden;
+            transition: 0.2s;
+        }
+
+        .match-card:hover {
+            transform: translateY(-3px);
+            border-color: #4a90e2;
+        }
+
+        .match-header {
+            background: linear-gradient(135deg, #1a2a3a, #111111);
+            padding: 1.2rem;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .match-score {
+            background: #4a90e2;
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .match-content {
+            padding: 1.5rem;
+        }
+
+        .item-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .lost-item, .found-item {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 1rem;
+            border: 1px solid #333333;
+        }
+
+        .lost-item h4, .found-item h4 {
+            color: #ffffff;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .lost-item h4 i {
+            color: #dc3545;
+        }
+
+        .found-item h4 i {
+            color: #28a745;
+        }
+
+        .item-image-small {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            background: #222222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .item-image-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .item-image-small i {
+            font-size: 2rem;
+            color: #4a90e2;
+        }
+
+        .item-details p {
+            color: #cccccc;
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .item-details strong {
+            color: #ffffff;
+        }
+
+        .match-factors {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 1rem;
+            border: 1px solid #333333;
+        }
+
+        .match-factors h4 {
+            color: #ffffff;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .factor-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .factor-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.5rem;
+            background: #222222;
+            border-radius: 10px;
+        }
+
+        .factor-item i {
+            width: 20px;
+        }
+
+        .factor-item.match {
+            color: #28a745;
+        }
+
+        .factor-item.mismatch {
+            color: #dc3545;
+        }
+
+        .factor-item.neutral {
+            color: #ffc107;
+        }
+
+        .factor-desc {
+            flex: 1;
+            color: #cccccc;
+            font-size: 0.85rem;
+        }
+
+        .factor-score {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .match-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            text-decoration: none;
+            font-size: 0.9rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3a7bc8;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #4a90e2;
+            color: #4a90e2;
+        }
+
+        .btn-outline:hover {
+            background: #1a2a3a;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            background: #111111;
+            border-radius: 15px;
+            border: 1px dashed #4a90e2;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #4a90e2;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #888888;
+            margin-bottom: 1.5rem;
+        }
+
+        .dut-footer {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: #111111;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #2a2a2a;
+        }
+
+        .dut-footer p {
+            color: #888888;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .matches-grid {
+                grid-template-columns: 1fr;
+            }
+            .item-comparison {
+                grid-template-columns: 1fr;
+            }
+            .match-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-university"></i>
+            <span>DUT Lost & Found</span>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/all-lost" class="nav-link">Lost Items</a>
+            <a href="/all-found" class="nav-link">Found Items</a>
+            <a href="/matches" class="nav-link active">Matches</a>
+            <a href="/report-lost" class="nav-link">Report Lost</a>
+            <a href="/report-found" class="nav-link">Report Found</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>
+                <i class="fas fa-handshake"></i> Potential Matches
+            </h1>
+            <p>We've found items that might match what you're looking for</p>
+        </div>
+
+        <div class="match-stats">
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ total_matches }}</h3>
+                    <p>Potential Matches</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ high_confidence_matches }}</h3>
+                    <p>High Confidence</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ pending_claims }}</h3>
+                    <p>Pending Claims</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="filters-section">
+            <form method="GET" action="/matches" id="filterForm">
+                <div class="filter-group">
+                    <select name="min_score" class="filter-select" onchange="this.form.submit()">
+                        <option value="0" {% if min_score == 0 %}selected{% endif %}>All Matches</option>
+                        <option value="50" {% if min_score == 50 %}selected{% endif %}>50%+ Confidence</option>
+                        <option value="70" {% if min_score == 70 %}selected{% endif %}>70%+ Confidence</option>
+                        <option value="90" {% if min_score == 90 %}selected{% endif %}>90%+ Confidence</option>
+                    </select>
+                    
+                    <select name="category" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ cat|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <select name="sort" class="filter-select" onchange="this.form.submit()">
+                        <option value="score" {% if sort == 'score' %}selected{% endif %}>Sort by Match Score</option>
+                        <option value="date" {% if sort == 'date' %}selected{% endif %}>Sort by Date</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div class="matches-grid">
+            {% for match in matches %}
+            <div class="match-card">
+                <div class="match-header">
+                    <span class="match-score">
+                        <i class="fas fa-chart-line"></i> {{ match.score }}% Match
+                    </span>
+                    <span style="color: #888888; font-size: 0.8rem;">
+                        <i class="fas fa-calendar"></i> {{ match.date }}
+                    </span>
+                </div>
+                
+                <div class="match-content">
+                    <div class="item-comparison">
+                        <div class="lost-item">
+                            <h4><i class="fas fa-archive"></i> Your Lost Item</h4>
+                            <div class="item-image-small">
+                                {% if match.lost_item.image_path %}
+                                    <img src="{{ url_for('static', filename=match.lost_item.image_path) }}" alt="{{ match.lost_item.item_name }}">
+                                {% else %}
+                                    <i class="fas fa-box"></i>
+                                {% endif %}
+                            </div>
+                            <div class="item-details">
+                                <p><strong>Item:</strong> {{ match.lost_item.item_name }}</p>
+                                <p><strong>Category:</strong> {{ match.lost_item.category }}</p>
+                                <p><strong>Lost at:</strong> {{ match.lost_item.location }}</p>
+                                <p><strong>Date:</strong> {{ match.lost_item.date_lost }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="found-item">
+                            <h4><i class="fas fa-hand-holding-heart"></i> Found Item</h4>
+                            <div class="item-image-small">
+                                {% if match.found_item.image_path %}
+                                    <img src="{{ url_for('static', filename=match.found_item.image_path) }}" alt="{{ match.found_item.item_name }}">
+                                {% else %}
+                                    <i class="fas fa-box"></i>
+                                {% endif %}
+                            </div>
+                            <div class="item-details">
+                                <p><strong>Item:</strong> {{ match.found_item.item_name }}</p>
+                                <p><strong>Category:</strong> {{ match.found_item.category }}</p>
+                                <p><strong>Found at:</strong> {{ match.found_item.location }}</p>
+                                <p><strong>Date:</strong> {{ match.found_item.date_found }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="match-factors">
+                        <h4>Why this might be a match:</h4>
+                        <div class="factor-list">
+                            {% if match.factors.category_match %}
+                            <div class="factor-item match">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="factor-desc">Same category ({{ match.lost_item.category }})</span>
+                                <span class="factor-score">+30%</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if match.factors.name_similarity > 0 %}
+                            <div class="factor-item match">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="factor-desc">Item names are similar ({{ match.factors.name_similarity }}% match)</span>
+                                <span class="factor-score">+{{ match.factors.name_similarity|int // 3 }}%</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if match.factors.location_match %}
+                            <div class="factor-item match">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="factor-desc">Same location ({{ match.lost_item.location }})</span>
+                                <span class="factor-score">+25%</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if match.factors.date_proximity > 0 %}
+                            <div class="factor-item match">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="factor-desc">Dates are close ({{ match.factors.date_proximity }} days apart)</span>
+                                <span class="factor-score">+{{ match.factors.date_proximity }}%</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if match.factors.description_match %}
+                            <div class="factor-item match">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="factor-desc">Descriptions contain similar keywords</span>
+                                <span class="factor-score">+20%</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if match.factors.exact_match %}
+                            <div class="factor-item match">
+                                <i class="fas fa-star"></i>
+                                <span class="factor-desc">Exact match found!</span>
+                                <span class="factor-score">+50%</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="match-actions">
+                        <a href="/item/lost/{{ match.lost_item.id }}" class="btn btn-outline">
+                            <i class="fas fa-eye"></i> View Your Item
+                        </a>
+                        <form action="/claim/found/{{ match.found_item.id }}" method="POST" style="flex: 1;">
+                            <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to claim this item?')">
+                                <i class="fas fa-hand-paper"></i> Claim This Item
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-handshake"></i>
+                <h3>No matches found</h3>
+                <p>We haven't found any potential matches for your lost items yet. Check back later or browse all found items.</p>
+                <a href="/all-found" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Browse Found Items
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="dut-footer">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 1rem;">
+                <i class="fas fa-university" style="font-size: 1.5rem; color: #4a90e2;"></i>
+                <span style="font-weight: 600; font-size: 1rem; color: #ffffff;">DUT</span>
+                <i class="fas fa-graduation-cap" style="font-size: 1.5rem; color: #4a90e2;"></i>
+            </div>
+            <p><i class="fas fa-copyright"></i> 2026 DUT Lost and Found</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Details · DUT Lost & Found</title>
+    <!-- Poppins font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f0f7fc;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: #1b5a7e;
+        }
+
+        .logo span {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1b5a7e;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #1b5a7e;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #e9ecef;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-name {
+            color: #1b5a7e;
+            font-weight: 500;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #1b5a7e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .back-link {
+            margin-bottom: 1rem;
+        }
+
+        .back-link a {
+            color: #1b5a7e;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .item-header {
+            padding: 2rem;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-type-badge {
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .badge-lost {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-found {
+            background: #28a745;
+            color: white;
+        }
+
+        .item-status {
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            background: #e9ecef;
+            color: #1b5a7e;
+            font-weight: 500;
+        }
+
+        .item-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .item-image {
+            background: #f8f9fa;
+            border-radius: 20px;
+            overflow: hidden;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-image .placeholder-icon {
+            font-size: 8rem;
+            color: #adb5bd;
+        }
+
+        .item-info h2 {
+            color: #1b5a7e;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 15px;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #1b5a7e;
+        }
+
+        .description-box {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .description-box h3 {
+            color: #1b5a7e;
+            margin-bottom: 0.5rem;
+        }
+
+        .description-box p {
+            color: #2c4a61;
+            line-height: 1.6;
+        }
+
+        .contact-section {
+            background: #e6f0ff;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .contact-section h3 {
+            color: #1b5a7e;
+            margin-bottom: 1rem;
+        }
+
+        .contact-details {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .contact-details p {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #2c4a61;
+        }
+
+        .contact-details i {
+            color: #1b5a7e;
+            width: 20px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: #1b5a7e;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0e405a;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #1b5a7e;
+            color: #1b5a7e;
+        }
+
+        .btn-outline:hover {
+            background: #1b5a7e;
+            color: white;
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .claim-form {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-top: 1rem;
+            border: 2px solid #ffd700;
+        }
+
+        .claim-form textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            margin: 1rem 0;
+            font-family: 'Poppins', sans-serif;
+            resize: vertical;
+        }
+
+        .flash-messages {
+            margin-bottom: 1.5rem;
+        }
+
+        .flash-message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .flash-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .flash-message.danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .item-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-search"></i>
+            <span>DUT Lost & Found</span>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/search" class="nav-link">Search</a>
+            <a href="/report-lost" class="nav-link">Report Lost</a>
+            <a href="/report-found" class="nav-link">Report Found</a>
+        </div>
+        <div class="user-info">
+            <span class="user-name">{{ user.full_name }}</span>
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="back-link">
+            <a href="javascript:history.back()">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+
+        <div class="item-card">
+            <div class="item-header">
+                <span class="item-type-badge {% if item_type == 'lost' %}badge-lost{% else %}badge-found{% endif %}">
+                    {% if item_type == 'lost' %}
+                        <i class="fas fa-archive"></i> LOST ITEM
+                    {% else %}
+                        <i class="fas fa-hand-holding-heart"></i> FOUND ITEM
+                    {% endif %}
+                </span>
+                <span class="item-status">
+                    <i class="fas fa-circle"></i> {{ item.status|capitalize }}
+                </span>
+            </div>
+
+            <div class="item-content">
+                <div class="item-image">
+                    {% if item.image_path %}
+                        <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.item_name }}">
+                    {% else %}
+                        <i class="fas fa-image placeholder-icon"></i>
+                    {% endif %}
+                </div>
+
+                <div class="item-info">
+                    <h2>{{ item.item_name }}</h2>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Category</div>
+                            <div class="info-value">{{ item.category|capitalize }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                {% if item_type == 'lost' %}Date Lost{% else %}Date Found{% endif %}
+                            </div>
+                            <div class="info-value">
+                                {% if item_type == 'lost' %}
+                                    {{ item.date_lost }}
+                                {% else %}
+                                    {{ item.date_found }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Location</div>
+                            <div class="info-value">{{ item.location }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Reported By</div>
+                            <div class="info-value">{{ item.contact_name }}</div>
+                        </div>
+                    </div>
+
+                    <div class="description-box">
+                        <h3>Description</h3>
+                        <p>{{ item.description }}</p>
+                    </div>
+
+                    <div class="contact-section">
+                        <h3><i class="fas fa-address-card"></i> Contact Information</h3>
+                        <div class="contact-details">
+                            <p><i class="fas fa-user"></i> {{ item.contact_name }}</p>
+                            <p><i class="fas fa-envelope"></i> {{ item.contact_email }}</p>
+                            {% if item.contact_phone %}
+                                <p><i class="fas fa-phone"></i> {{ item.contact_phone }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        {% if item_type == 'found' and item.status == 'available' %}
+                            <button class="btn btn-success" onclick="showClaimForm()">
+                                <i class="fas fa-hand-paper"></i> Claim This Item
+                            </button>
+                        {% endif %}
+                        
+                        {% if item.reward_offered %}
+                            <div style="background: #ffd700; padding: 0.5rem 1rem; border-radius: 50px; color: #1b5a7e; font-weight: 600;">
+                                <i class="fas fa-gift"></i> Reward Offered
+                            </div>
+                        {% endif %}
+                        
+                        <a href="/search" class="btn btn-outline">
+                            <i class="fas fa-search"></i> Search More
+                        </a>
+                    </div>
+
+                    {% if item_type == 'found' and item.status == 'available' and user.id != item.user_id %}
+<div class="claim-section">
+    <h3><i class="fas fa-hand-paper"></i> Is this your item?</h3>
+    <p>If you believe this item belongs to you, you can submit a claim request. The finder will be notified and an admin will review your request.</p>
+    <form method="POST" action="/claim/found/{{ item.id }}">
+        <div class="form-group">
+            <label for="message">Explain why this item belongs to you:</label>
+            <textarea name="message" id="message" rows="4" placeholder="Please provide proof of ownership (describe unique features, when you lost it, etc.)" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-paper-plane"></i> Submit Claim
+        </button>
+    </form>
+</div>
+{% endif %}
+
+                    <!-- Claim Form (Hidden by default) -->
+                    <div id="claimForm" class="claim-form" style="display: none;">
+                        <h3><i class="fas fa-file-signature"></i> Submit Claim Request</h3>
+                        <form method="POST" action="/claim/{{ item_type }}/{{ item.id }}">
+                            <textarea name="message" rows="4" placeholder="Please explain why this item belongs to you (provide proof of ownership if possible)..." required></textarea>
+                            <div style="display: flex; gap: 1rem;">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i> Submit Claim
+                                </button>
+                                <button type="button" class="btn btn-outline" onclick="hideClaimForm()">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showClaimForm() {
+            document.getElementById('claimForm').style.display = 'block';
+            document.getElementById('claimForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideClaimForm() {
+            document.getElementById('claimForm').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

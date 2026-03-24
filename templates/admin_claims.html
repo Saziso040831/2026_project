@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Pending Claims · DUT Lost & Found</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4a90e2 0%, #4a90e2 30%, #ffffff 30%, #ffffff 100%);
+            z-index: 1000;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #111111;
+            color: #ffffff;
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid #2a2a2a;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid #2a2a2a;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .admin-logo {
+            width: 80px;
+            height: 80px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            border: 2px solid #4a90e2;
+        }
+
+        .admin-logo i {
+            font-size: 2.5rem;
+            color: #4a90e2;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #ffffff;
+        }
+
+        .sidebar-header h2 i {
+            color: #4a90e2;
+        }
+
+        .sidebar-header p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 5px;
+            color: #cccccc;
+        }
+
+        .admin-badge-sidebar {
+            background: #4a90e2;
+            color: white;
+            padding: 0.2rem 1rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .admin-info {
+            padding: 1.5rem;
+            background: #1a1a1a;
+            margin: 0 1rem 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #2a2a2a;
+        }
+
+        .admin-avatar {
+            width: 70px;
+            height: 70px;
+            background: #2a2a2a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            color: #4a90e2;
+            border: 2px solid #4a90e2;
+        }
+
+        .admin-info .name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        .admin-info .role-badge {
+            background: #4a90e2;
+            color: white;
+            padding: 0.2rem 1rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 1.5rem;
+            color: #aaaaaa;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: #1a1a1a;
+            color: #ffffff;
+            border-left: 3px solid #4a90e2;
+        }
+
+        .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+            color: #4a90e2;
+        }
+
+        .badge {
+            background: #2a2a2a;
+            color: #4a90e2;
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-size: 0.65rem;
+            margin-left: auto;
+            font-weight: 600;
+            border: 1px solid #333333;
+        }
+
+        .badge-warning {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            background: #0a0a0a;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: #111111;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .page-title h1 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .page-title p {
+            color: #888888;
+            font-size: 0.85rem;
+        }
+
+        .admin-badge {
+            background: #4a90e2;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .stats-card {
+            background: #111111;
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid #2a2a2a;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stats-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffc107;
+        }
+
+        .stats-card .stat-label {
+            color: #888888;
+            font-size: 1rem;
+        }
+
+        .claims-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .claim-card {
+            background: #111111;
+            border-radius: 20px;
+            border: 1px solid #2a2a2a;
+            overflow: hidden;
+            transition: 0.2s;
+        }
+
+        .claim-card:hover {
+            border-color: #4a90e2;
+        }
+
+        .claim-header {
+            background: linear-gradient(135deg, #1a2a3a, #111111);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .claim-id {
+            color: #4a90e2;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .claim-date {
+            color: #888888;
+            font-size: 0.8rem;
+        }
+
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        .item-card {
+            background: #1a1a1a;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid #333333;
+        }
+
+        .item-card-header {
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid #333333;
+        }
+
+        .item-card-header.lost {
+            background: linear-gradient(135deg, #dc354520, #1a1a1a);
+            border-bottom-color: #dc3545;
+        }
+
+        .item-card-header.found {
+            background: linear-gradient(135deg, #28a74520, #1a1a1a);
+            border-bottom-color: #28a745;
+        }
+
+        .item-card-header h3 {
+            color: #ffffff;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .item-card-header h3 i.lost {
+            color: #dc3545;
+        }
+
+        .item-card-header h3 i.found {
+            color: #28a745;
+        }
+
+        .item-card-body {
+            padding: 1.5rem;
+        }
+
+        .item-image {
+            width: 100%;
+            height: 180px;
+            background: #222222;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .item-image i {
+            font-size: 3rem;
+            color: #4a90e2;
+        }
+
+        .detail-row {
+            margin-bottom: 0.8rem;
+        }
+
+        .detail-label {
+            font-size: 0.7rem;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.2rem;
+        }
+
+        .detail-value {
+            font-size: 0.9rem;
+            color: #ffffff;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .description-box {
+            background: #222222;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin: 0.8rem 0;
+        }
+
+        .description-box p {
+            color: #cccccc;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .contact-box {
+            background: #222222;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-top: 0.8rem;
+            border-left: 3px solid #4a90e2;
+        }
+
+        .contact-box .detail-label {
+            color: #4a90e2;
+        }
+
+        .claimant-section {
+            background: #1a2a3a;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 0 1.5rem 1.5rem 1.5rem;
+            border: 1px solid #4a90e2;
+        }
+
+        .claimant-section h4 {
+            color: #4a90e2;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .claimant-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .claim-message {
+            background: #222222;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .claim-message p {
+            color: #cccccc;
+            font-style: italic;
+        }
+
+        .claim-actions {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 50px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            background: #111111;
+            border-radius: 15px;
+            border: 1px dashed #4a90e2;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #4a90e2;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            color: #888888;
+        }
+
+        .dut-footer {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: #111111;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #2a2a2a;
+        }
+
+        .dut-footer p {
+            color: #888888;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 70px;
+            }
+            .sidebar-header h2 span, .sidebar-header p, .admin-info .name, .nav-link span {
+                display: none;
+            }
+            .main-content {
+                margin-left: 70px;
+            }
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+            .claimant-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            .claim-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="admin-logo">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h2>
+                    <i class="fas fa-search"></i> 
+                    <span>Admin Portal</span>
+                </h2>
+                <p>DUT Lost & Found</p>
+                <div class="admin-badge-sidebar">Administrator</div>
+            </div>
+            
+            <div class="admin-info">
+                <div class="admin-avatar">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="name">{{ user.full_name }}</div>
+                <div class="role-badge">
+                    <i class="fas fa-crown"></i> System Admin
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/admin/dashboard" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/pending-claims" class="nav-link active">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending Claims</span>
+                        <span class="badge badge-warning">{{ pending_claims }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/history" class="nav-link">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </a>
+                </li>
+                <li class="nav-item" style="margin-top: 2rem;">
+                    <a href="/logout" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1><i class="fas fa-clock"></i> Pending Claims</h1>
+                    <p>Compare the claimant's lost item with the found item to verify ownership</p>
+                </div>
+                <div class="admin-badge">
+                    <i class="fas fa-shield-alt"></i> Admin Access
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div>
+                    <div class="stat-value">{{ pending_claims }}</div>
+                    <div class="stat-label">Pending Claims to Review</div>
+                </div>
+                <i class="fas fa-clock" style="font-size: 3rem; color: #ffc107;"></i>
+            </div>
+
+            <div class="claims-grid">
+                {% if claims %}
+                    {% for claim in claims %}
+                    <div class="claim-card">
+                        <div class="claim-header">
+                            <span class="claim-id"><i class="fas fa-hashtag"></i> Claim #{{ claim.id }}</span>
+                            <span class="claim-date"><i class="far fa-calendar-alt"></i> {{ claim.created_at[:10] }}</span>
+                        </div>
+                        
+                        <!-- Comparison Section -->
+                        <div class="comparison-container">
+                            <!-- Claimant's Lost Item -->
+                            <div class="item-card">
+                                <div class="item-card-header lost">
+                                    <h3>
+                                        <i class="fas fa-archive lost"></i>
+                                        Claimant's Lost Item
+                                    </h3>
+                                </div>
+                                <div class="item-card-body">
+                                    <div class="item-image">
+                                        {% if claim.lost_item_image and claim.lost_item_image != 'None' and claim.lost_item_name != 'No lost item reported' %}
+                                            <img src="{{ url_for('static', filename=claim.lost_item_image) }}" alt="{{ claim.lost_item_name }}">
+                                        {% else %}
+                                            <i class="fas fa-box"></i>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="detail-row">
+                                        <div class="detail-label">Item Name</div>
+                                        <div class="detail-value"><strong>{{ claim.lost_item_name }}</strong></div>
+                                    </div>
+                                    
+                                    <div class="detail-row">
+                                        <div class="detail-label">Category</div>
+                                        <div class="detail-value">{{ claim.lost_item_category or '-' }}</div>
+                                    </div>
+                                    
+                                    <div class="detail-row">
+                                        <div class="detail-label">Date Lost</div>
+                                        <div class="detail-value">{{ claim.lost_item_date or '-' }}</div>
+                                    </div>
+                                    
+                                    <div class="detail-row">
+                                        <div class="detail-label">Location Lost</div>
+                                        <div class="detail-value">{{ claim.lost_item_location or '-' }}</div>
+                                    </div>
+                                    
+                                    {% if claim.lost_item_description and claim.lost_item_name != 'No lost item reported' %}
+                                    <div class="description-box">
+                                        <div class="detail-label">Description</div>
+                                        <p>{{ claim.lost_item_description[:200] }}{% if claim.lost_item_description|length > 200 %}...{% endif %}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="contact-box">
+                                        <div class="detail-label">Claimant's Contact</div>
+                                        <div class="detail-value">{{ claim.lost_owner_name or claim.claimant_name }}</div>
+                                        <div class="detail-value" style="font-size: 0.8rem;">{{ claim.lost_owner_email or claim.claimant_email }}</div>
+                                        <div class="detail-value" style="font-size: 0.8rem;">{{ claim.lost_owner_phone or claim.claimant_phone or 'No phone' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Found Item Being Claimed -->
+                            <div class="item-card">
+                                <div class="item-card-header found">
+                                    <h3>
+                                        <i class="fas fa-hand-holding-heart found"></i>
+                                        Found Item Being Claimed
+                                    </h3>
+                                </div>
+                                <div class="item-card-body">
+                                    <div class="item-image">
+                                        {% if claim.found_item_image and claim.found_item_image != 'None' %}
+                                            <img src="{{ url_for('static', filename=claim.found_item_image) }}" alt="{{ claim.found_item_name }}">
+                                        {% else %}
+                                            <i class="fas fa-box"></i>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="detail-row">
+                                        <div class="detail-label">Item Name</div>
+                                        <div class="detail-value"><strong>{{ claim.found_item_name }}</strong></div>
+                                    </div>
+                                    
+                                    <div class="detail-row">
+                                        <div class="detail-label">Category</div>
+                                        <div class="detail-value">{{ claim.found_item_category or '-' }}</div>
+                                    </div>
+                                    
+                                    <div class="detail-row">
+                                        <div class="detail-label">Date Found</div>
+                                        <div class="detail-value">{{ claim.found_item_date or '-' }}</div>
+                                    </div>
+                                    
+                                    <div class="detail-row">
+                                        <div class="detail-label">Location Found</div>
+                                        <div class="detail-value">{{ claim.found_item_location or '-' }}</div>
+                                    </div>
+                                    
+                                    {% if claim.found_item_description %}
+                                    <div class="description-box">
+                                        <div class="detail-label">Description</div>
+                                        <p>{{ claim.found_item_description[:200] }}{% if claim.found_item_description|length > 200 %}...{% endif %}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="contact-box">
+                                        <div class="detail-label">Finder's Contact</div>
+                                        <div class="detail-value">{{ claim.found_owner_name }}</div>
+                                        <div class="detail-value" style="font-size: 0.8rem;">{{ claim.found_owner_email }}</div>
+                                        <div class="detail-value" style="font-size: 0.8rem;">{{ claim.found_owner_phone or 'No phone' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Claimant Information -->
+                        <div class="claimant-section">
+                            <h4><i class="fas fa-user-check"></i> Claim Details</h4>
+                            <div class="claimant-grid">
+                                <div>
+                                    <div class="detail-label">Claimant Name</div>
+                                    <div class="detail-value">{{ claim.claimant_name }}</div>
+                                </div>
+                                <div>
+                                    <div class="detail-label">Student Number</div>
+                                    <div class="detail-value">{{ claim.claimant_student_number or '-' }}</div>
+                                </div>
+                                <div>
+                                    <div class="detail-label">Claim Submitted</div>
+                                    <div class="detail-value">{{ claim.created_at[:16].replace('T', ' ') }}</div>
+                                </div>
+                            </div>
+                            <div class="claim-message">
+                                <div class="detail-label">Claim Reason / Message</div>
+                                <p>"{{ claim.message or 'No message provided' }}"</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="claim-actions">
+                            <form method="POST" action="/admin/claim/{{ claim.id }}/approve" style="flex: 1;">
+                                <button type="submit" class="btn-action btn-approve" onclick="return confirm('Approve this claim? The claimant will be notified and both parties will receive contact information.')">
+                                    <i class="fas fa-check"></i> Approve Claim - Item Matches
+                                </button>
+                            </form>
+                            <form method="POST" action="/admin/claim/{{ claim.id }}/reject" style="flex: 1;">
+                                <button type="submit" class="btn-action btn-reject" onclick="return confirm('Reject this claim? The claimant will be notified.')">
+                                    <i class="fas fa-times"></i> Reject Claim - No Match
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <p>No pending claims to review</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="dut-footer">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 1rem;">
+                    <i class="fas fa-university" style="font-size: 1.5rem; color: #4a90e2;"></i>
+                    <span style="font-weight: 600; font-size: 1rem; color: #ffffff;">DUT</span>
+                    <i class="fas fa-graduation-cap" style="font-size: 1.5rem; color: #4a90e2;"></i>
+                </div>
+                <p><i class="fas fa-copyright"></i> 2026 DUT Lost and Found · Admin Portal</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Found Item · DUT Lost & Found</title>
+    <!-- Poppins font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem;
+            position: relative;
+        }
+
+        /* Subtle Pattern Overlay */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 1;
+        }
+
+        /* Green Accent Line for Found Items */
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #28a745 0%, #28a745 30%, #ffffff 30%, #ffffff 100%);
+            z-index: 3;
+        }
+
+        .form-card {
+            position: relative;
+            z-index: 2;
+            background: #111111;
+            width: 1000px;
+            max-width: 100%;
+            border-radius: 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            padding: 2.5rem;
+            border: 1px solid #2a2a2a;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-header h1 {
+            font-size: 2.2rem;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .form-header h1 i {
+            color: #28a745;
+        }
+
+        .form-header p {
+            color: #888888;
+            margin-top: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .input-field {
+            margin-bottom: 0.5rem;
+        }
+
+        .input-field label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #cccccc;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .input-field label i {
+            margin-right: 5px;
+            color: #28a745;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #1a1a1a;
+            border-radius: 30px;
+            padding: 0 18px;
+            border: 1.5px solid #333333;
+            transition: 0.2s;
+        }
+
+        .input-wrapper:hover {
+            background: #222222;
+            border-color: #28a745;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #28a745;
+            background: #222222;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+
+        .input-wrapper i {
+            color: #28a745;
+            width: 24px;
+        }
+
+        .input-wrapper input, .input-wrapper select, .input-wrapper textarea {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 15px 0;
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            outline: none;
+        }
+
+        .input-wrapper select {
+            cursor: pointer;
+        }
+
+        .input-wrapper select option {
+            background: #1a1a1a;
+            color: white;
+            padding: 10px;
+        }
+
+        .input-wrapper textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .input-wrapper input::placeholder, 
+        .input-wrapper textarea::placeholder {
+            color: #555555;
+        }
+
+        /* Campus Selection Dropdown */
+        .campus-select-wrapper {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .campus-select {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            border: 2px solid transparent;
+            background: #1a1a1a;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            transition: all 0.3s;
+        }
+
+        .campus-select:hover {
+            border-color: #28a745;
+        }
+
+        .campus-select:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+        }
+
+        .campus-select option {
+            padding: 1rem;
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .select-arrow {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #28a745;
+            pointer-events: none;
+            font-size: 1.2rem;
+        }
+
+        /* Category items grid */
+        .category-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.8rem;
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0.5rem;
+            background: #1a1a1a;
+            border-radius: 15px;
+            border: 1px solid #333333;
+        }
+
+        .category-item {
+            background: #222222;
+            border: 1px solid #333333;
+            border-radius: 10px;
+            padding: 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .category-item:hover {
+            border-color: #28a745;
+            background: #2a2a2a;
+        }
+
+        .category-item.selected {
+            border-color: #28a745;
+            background: #1a2a1a;
+            box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.3);
+        }
+
+        .category-item i {
+            font-size: 1.5rem;
+            color: #28a745;
+            margin-bottom: 0.3rem;
+            display: block;
+        }
+
+        .category-item span {
+            font-size: 0.8rem;
+            color: #ffffff;
+            display: block;
+        }
+
+        .custom-item-input {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .custom-item-input.show {
+            display: block;
+        }
+
+        .other-location-input {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .other-location-input.show {
+            display: block;
+        }
+
+        /* Image Upload Section */
+        .image-upload-section {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid #333333;
+            margin-bottom: 1rem;
+        }
+
+        .image-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .image-option {
+            flex: 1;
+            background: #222222;
+            border: 1px solid #333333;
+            border-radius: 15px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .image-option:hover {
+            border-color: #28a745;
+            background: #2a2a2a;
+        }
+
+        .image-option i {
+            font-size: 2rem;
+            color: #28a745;
+            margin-bottom: 0.5rem;
+        }
+
+        .image-option span {
+            display: block;
+            color: #cccccc;
+            font-size: 0.9rem;
+        }
+
+        .image-option.active {
+            border-color: #28a745;
+            background: #2a2a2a;
+        }
+
+        /* Camera Container */
+        .camera-container {
+            background: #222222;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border: 1px solid #333333;
+        }
+
+        #camera-view {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #1a1a1a;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .btn-camera {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-camera:hover {
+            background: #218838;
+        }
+
+        .btn-camera.secondary {
+            background: #333333;
+            color: white;
+        }
+
+        .btn-camera.secondary:hover {
+            background: #444444;
+        }
+
+        /* File Upload */
+        .file-upload-area {
+            background: #222222;
+            border: 2px dashed #333333;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 1rem;
+        }
+
+        .file-upload-area:hover {
+            border-color: #28a745;
+            background: #2a2a2a;
+        }
+
+        .file-upload-area i {
+            font-size: 3rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-area p {
+            color: #888888;
+        }
+
+        .file-upload-area .small {
+            font-size: 0.8rem;
+            color: #666666;
+            margin-top: 0.5rem;
+        }
+
+        #file-name {
+            margin-top: 10px;
+            padding: 0.5rem;
+            background: #1a1a1a;
+            border-radius: 10px;
+            color: #28a745;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        /* Image Preview */
+        .image-preview {
+            margin-top: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        #image-preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            border: 2px solid #28a745;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #dc3545;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .remove-image:hover {
+            background: #c82333;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #28a745;
+            color: #28a745;
+        }
+
+        .btn-outline:hover {
+            background: #1a2a1a;
+        }
+
+        .flash-messages {
+            margin-bottom: 1.5rem;
+        }
+
+        .flash-message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+        }
+
+        .flash-message.success {
+            color: #28a745;
+        }
+
+        .flash-message.danger {
+            color: #dc3545;
+        }
+
+        .hint-text {
+            font-size: 0.7rem;
+            color: #888888;
+            margin-top: 4px;
+            margin-left: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .hint-text i {
+            color: #28a745;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-card">
+        <div class="form-header">
+            <h1>
+                <i class="fas fa-hand-holding-heart"></i> Report Found Item
+            </h1>
+            <p>Select item details, location, and upload a photo</p>
+        </div>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/report-found" enctype="multipart/form-data" id="reportForm">
+            <div class="form-grid">
+                <!-- Item Name (will be auto-filled by category selection) -->
+                <div class="input-field full-width">
+                    <label><i class="fas fa-tag"></i> Item Name *</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-box"></i>
+                        <input type="text" id="item_name" name="item_name" placeholder="Select a category and item below" readonly required>
+                    </div>
+                </div>
+
+                <!-- Category Selection -->
+                <div class="input-field full-width">
+                    <label><i class="fas fa-list"></i> Category *</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-tags"></i>
+                        <select id="main_category" name="category" onchange="loadCategoryItems()" required>
+                            <option value="" disabled selected>Select a category</option>
+                            <option value="electronics">📱 Electronics & Gadgets</option>
+                            <option value="accessories">🎒 Accessories & Personal Items</option>
+                            <option value="keys">🔑 Keys & Keychains</option>
+                            <option value="documents">📄 Documents & IDs</option>
+                            <option value="clothing">👕 Clothing & Apparel</option>
+                            <option value="bags">🎒 Bags & Backpacks</option>
+                            <option value="books">📚 Books & Study Materials</option>
+                            <option value="stationery">✏️ Stationery & Supplies</option>
+                            <option value="tech">💻 Tech Accessories</option>
+                            <option value="other">❓ Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Category Items Grid -->
+                <div class="input-field full-width" id="itemsContainer" style="display: none;">
+                    <label><i class="fas fa-boxes"></i> Select Item *</label>
+                    <div class="category-items" id="categoryItems"></div>
+                    
+                    <!-- Custom item input -->
+                    <div class="custom-item-input" id="customItemDiv">
+                        <div class="input-field full-width">
+                            <label><i class="fas fa-pen"></i> Please specify the item</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-box"></i>
+                                <input type="text" id="custom_item" name="custom_item" placeholder="e.g., Scientific calculator, Lab coat, etc.">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date Found -->
+                <div class="input-field">
+                    <label><i class="fas fa-calendar"></i> Date Found *</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-calendar-alt"></i>
+                        <input type="date" name="date_found" value="{{ now.strftime('%Y-%m-%d') }}" max="{{ now.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                </div>
+
+                <!-- Campus Selection Dropdown -->
+                <div class="input-field">
+                    <label><i class="fas fa-map-marker-alt"></i> Campus *</label>
+                    <div class="campus-select-wrapper">
+                        <select id="campus_select" name="location" class="campus-select" onchange="handleCampusChange()" required>
+                            <option value="" disabled selected>Select a campus</option>
+                            <option value="Steve Biko Campus">Steve Biko Campus</option>
+                            <option value="Ritson Campus">Ritson Campus</option>
+                            <option value="ML Sultan Campus">ML Sultan Campus</option>
+                            <option value="City Campus">City Campus</option>
+                            <option value="Other Location">Other Location</option>
+                        </select>
+                        <i class="fas fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+
+                <!-- Other location details input -->
+                <div class="other-location-input" id="otherLocationDiv">
+                    <div class="input-field full-width">
+                        <label><i class="fas fa-pen"></i> Please specify the location</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-map-pin"></i>
+                            <input type="text" id="other_location_text" name="other_location" placeholder="e.g., Between buildings, parking lot, etc.">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="input-field full-width">
+                    <label><i class="fas fa-align-left"></i> Description</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-pencil-alt"></i>
+                        <textarea name="description" placeholder="Provide any additional details about the item"></textarea>
+                    </div>
+                </div>
+
+                <!-- Contact Name -->
+                <div class="input-field">
+                    <label><i class="fas fa-user"></i> Your Name *</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user-circle"></i>
+                        <input type="text" name="contact_name" value="{{ user.full_name }}" required>
+                    </div>
+                </div>
+
+                <!-- Contact Email -->
+                <div class="input-field">
+                    <label><i class="fas fa-envelope"></i> Your Email *</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" name="contact_email" value="{{ user.email }}" required>
+                    </div>
+                </div>
+
+                <!-- Contact Phone -->
+                <div class="input-field">
+                    <label><i class="fas fa-phone"></i> Your Phone</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-phone-alt"></i>
+                        <input type="tel" name="contact_phone" placeholder="e.g., 0712345678">
+                    </div>
+                </div>
+
+                <!-- Image Upload Section with Camera -->
+                <div class="input-field full-width">
+                    <label><i class="fas fa-image"></i> Item Photo</label>
+                    
+                    <div class="image-upload-section">
+                        <div class="image-options">
+                            <div class="image-option" id="cameraOption" onclick="showCamera()">
+                                <i class="fas fa-camera"></i>
+                                <span>Take Photo</span>
+                            </div>
+                            <div class="image-option" id="uploadOption" onclick="showFileUpload()">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Upload Image</span>
+                            </div>
+                        </div>
+
+                        <!-- Camera Container -->
+                        <div id="cameraContainer" class="camera-container" style="display: none;">
+                            <video id="camera-view" autoplay playsinline></video>
+                            <canvas id="camera-canvas" style="display: none;"></canvas>
+                            <div class="camera-controls">
+                                <button type="button" class="btn-camera" onclick="capturePhoto()">
+                                    <i class="fas fa-camera"></i> Capture
+                                </button>
+                                <button type="button" class="btn-camera secondary" onclick="stopCamera()">
+                                    <i class="fas fa-stop"></i> Stop Camera
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- File Upload Container -->
+                        <div id="fileUploadContainer" style="display: none;">
+                            <div class="file-upload-area" onclick="document.getElementById('file-input').click()">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Click to upload or drag and drop</p>
+                                <p class="small">PNG, JPG, JPEG, GIF up to 16MB</p>
+                                <input type="file" id="file-input" name="image" accept="image/*" style="display: none;" onchange="handleFileSelect(this)">
+                            </div>
+                            <div id="file-name"></div>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" class="image-preview" style="display: none;">
+                            <img id="image-preview-img" src="#" alt="Preview">
+                            <button type="button" class="remove-image" onclick="removeImage()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <!-- Hidden input for captured photo data -->
+                        <input type="hidden" id="captured-photo" name="captured_photo">
+                    </div>
+                    <div class="hint-text">
+                        <i class="fas fa-info-circle"></i> Take a clear photo to help identify the item
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Submit Report
+                </button>
+                <a href="/dashboard" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Student-related items by category
+        const categoryItems = {
+            'electronics': [
+                { name: 'Laptop', icon: 'fa-laptop' },
+                { name: 'Smartphone', icon: 'fa-mobile-alt' },
+                { name: 'Tablet', icon: 'fa-tablet-alt' },
+                { name: 'Headphones', icon: 'fa-headphones' },
+                { name: 'Earbuds', icon: 'fa-headphones-alt' },
+                { name: 'Power Bank', icon: 'fa-battery-full' },
+                { name: 'Charger', icon: 'fa-plug' },
+                { name: 'USB Cable', icon: 'fa-usb' },
+                { name: 'Flash Drive', icon: 'fa-usb-drive' },
+                { name: 'External Hard Drive', icon: 'fa-hdd' },
+                { name: 'Calculator', icon: 'fa-calculator' },
+                { name: 'Other Electronics', icon: 'fa-microchip' }
+            ],
+            'accessories': [
+                { name: 'Wallet', icon: 'fa-wallet' },
+                { name: 'Purse', icon: 'fa-purse' },
+                { name: 'Watch', icon: 'fa-clock' },
+                { name: 'Smart Watch', icon: 'fa-clock' },
+                { name: 'Sunglasses', icon: 'fa-glasses' },
+                { name: 'Glasses', icon: 'fa-glasses' },
+                { name: 'Jewelry', icon: 'fa-gem' },
+                { name: 'Ring', icon: 'fa-ring' },
+                { name: 'Necklace', icon: 'fa-gem' },
+                { name: 'Bracelet', icon: 'fa-gem' },
+                { name: 'Hat', icon: 'fa-hat-cowboy' },
+                { name: 'Cap', icon: 'fa-hat-cowboy' },
+                { name: 'Scarf', icon: 'fa-tshirt' },
+                { name: 'Belt', icon: 'fa-tshirt' },
+                { name: 'Other Accessory', icon: 'fa-gem' }
+            ],
+            'keys': [
+                { name: 'House Keys', icon: 'fa-key' },
+                { name: 'Car Keys', icon: 'fa-car' },
+                { name: 'Dorm Room Keys', icon: 'fa-door-open' },
+                { name: 'Lab Keys', icon: 'fa-flask' },
+                { name: 'Office Keys', icon: 'fa-briefcase' },
+                { name: 'Keychain', icon: 'fa-key' },
+                { name: 'Key Ring', icon: 'fa-circle' },
+                { name: 'USB Key', icon: 'fa-usb' },
+                { name: 'Other Keys', icon: 'fa-key' }
+            ],
+            'documents': [
+                { name: 'Student ID Card', icon: 'fa-id-card' },
+                { name: 'Access Card', icon: 'fa-credit-card' },
+                { name: 'Library Card', icon: 'fa-book' },
+                { name: 'Driver\'s License', icon: 'fa-id-card' },
+                { name: 'Passport', icon: 'fa-passport' },
+                { name: 'Birth Certificate', icon: 'fa-file' },
+                { name: 'Study Notes', icon: 'fa-file-alt' },
+                { name: 'Textbook', icon: 'fa-book' },
+                { name: 'Notebook', icon: 'fa-notebook' },
+                { name: 'Exam Paper', icon: 'fa-file-pdf' },
+                { name: 'Assignment', icon: 'fa-file-word' },
+                { name: 'Other Document', icon: 'fa-file' }
+            ],
+            'clothing': [
+                { name: 'Jacket', icon: 'fa-tshirt' },
+                { name: 'Hoodie', icon: 'fa-tshirt' },
+                { name: 'Sweater', icon: 'fa-tshirt' },
+                { name: 'Shirt', icon: 'fa-tshirt' },
+                { name: 'T-Shirt', icon: 'fa-tshirt' },
+                { name: 'Pants', icon: 'fa-tshirt' },
+                { name: 'Jeans', icon: 'fa-tshirt' },
+                { name: 'Shorts', icon: 'fa-tshirt' },
+                { name: 'Skirt', icon: 'fa-tshirt' },
+                { name: 'Dress', icon: 'fa-tshirt' },
+                { name: 'Shoes', icon: 'fa-shoe-prints' },
+                { name: 'Sneakers', icon: 'fa-shoe-prints' },
+                { name: 'Sandals', icon: 'fa-shoe-prints' },
+                { name: 'Socks', icon: 'fa-socks' },
+                { name: 'Uniform', icon: 'fa-tshirt' },
+                { name: 'Lab Coat', icon: 'fa-tshirt' },
+                { name: 'Other Clothing', icon: 'fa-tshirt' }
+            ],
+            'bags': [
+                { name: 'Backpack', icon: 'fa-backpack' },
+                { name: 'Laptop Bag', icon: 'fa-laptop' },
+                { name: 'Messenger Bag', icon: 'fa-bag-shopping' },
+                { name: 'Tote Bag', icon: 'fa-bag-shopping' },
+                { name: 'Gym Bag', icon: 'fa-dumbbell' },
+                { name: 'Handbag', icon: 'fa-purse' },
+                { name: 'Pencil Case', icon: 'fa-pencil-alt' },
+                { name: 'Lunch Bag', icon: 'fa-utensils' },
+                { name: 'Other Bag', icon: 'fa-bag-shopping' }
+            ],
+            'books': [
+                { name: 'Textbook', icon: 'fa-book' },
+                { name: 'Novel', icon: 'fa-book-open' },
+                { name: 'Study Guide', icon: 'fa-book' },
+                { name: 'Dictionary', icon: 'fa-book' },
+                { name: 'Notebook', icon: 'fa-notebook' },
+                { name: 'Lab Manual', icon: 'fa-flask' },
+                { name: 'Course Reader', icon: 'fa-file-alt' },
+                { name: 'Other Book', icon: 'fa-book' }
+            ],
+            'stationery': [
+                { name: 'Pen', icon: 'fa-pen' },
+                { name: 'Pencil', icon: 'fa-pencil' },
+                { name: 'Highlighter', icon: 'fa-highlighter' },
+                { name: 'Marker', icon: 'fa-pen' },
+                { name: 'Eraser', icon: 'fa-eraser' },
+                { name: 'Ruler', icon: 'fa-ruler' },
+                { name: 'Sharpener', icon: 'fa-pencil' },
+                { name: 'Stapler', icon: 'fa-stapler' },
+                { name: 'Paper', icon: 'fa-copy' },
+                { name: 'Folder', icon: 'fa-folder' },
+                { name: 'Binder', icon: 'fa-folder' },
+                { name: 'Calculator', icon: 'fa-calculator' },
+                { name: 'Other Stationery', icon: 'fa-pen' }
+            ],
+            'tech': [
+                { name: 'USB Cable', icon: 'fa-usb' },
+                { name: 'Charger', icon: 'fa-plug' },
+                { name: 'Power Bank', icon: 'fa-battery-full' },
+                { name: 'Mouse', icon: 'fa-mouse' },
+                { name: 'Keyboard', icon: 'fa-keyboard' },
+                { name: 'USB Drive', icon: 'fa-usb-drive' },
+                { name: 'SD Card', icon: 'fa-sd-card' },
+                { name: 'Adapter', icon: 'fa-plug' },
+                { name: 'Extension Cord', icon: 'fa-plug' },
+                { name: 'Webcam', icon: 'fa-video' },
+                { name: 'Microphone', icon: 'fa-microphone' },
+                { name: 'Other Tech', icon: 'fa-microchip' }
+            ]
+        };
+
+        // Variables
+        let videoStream = null;
+        let cameraActive = false;
+        let selectedCategory = '';
+        let selectedItem = '';
+
+        // ==================== CATEGORY FUNCTIONS ====================
+        function loadCategoryItems() {
+            const category = document.getElementById('main_category').value;
+            const itemsContainer = document.getElementById('itemsContainer');
+            const categoryItemsDiv = document.getElementById('categoryItems');
+            
+            if (!category || category === 'other') {
+                itemsContainer.style.display = 'none';
+                if (category === 'other') {
+                    document.getElementById('item_name').value = '';
+                    document.getElementById('item_name').readOnly = false;
+                    document.getElementById('item_name').placeholder = 'Please specify the item';
+                }
+                return;
+            }
+
+            selectedCategory = category;
+            const items = categoryItems[category] || [];
+            
+            if (items.length > 0) {
+                let html = '';
+                items.forEach(item => {
+                    html += `
+                        <div class="category-item" onclick="selectItem('${item.name}', this)">
+                            <i class="fas ${item.icon}"></i>
+                            <span>${item.name}</span>
+                        </div>
+                    `;
+                });
+                
+                categoryItemsDiv.innerHTML = html;
+                itemsContainer.style.display = 'block';
+                document.getElementById('item_name').readOnly = true;
+                document.getElementById('item_name').placeholder = 'Select an item above';
+                document.getElementById('customItemDiv').classList.remove('show');
+            }
+        }
+
+        function selectItem(itemName, element) {
+            document.querySelectorAll('.category-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            document.getElementById('item_name').value = itemName;
+            selectedItem = itemName;
+            
+            if (itemName.includes('Other')) {
+                document.getElementById('customItemDiv').classList.add('show');
+            } else {
+                document.getElementById('customItemDiv').classList.remove('show');
+            }
+        }
+
+        // ==================== CAMPUS FUNCTIONS ====================
+        function handleCampusChange() {
+            const campusSelect = document.getElementById('campus_select');
+            const selectedCampus = campusSelect.value;
+            const otherDiv = document.getElementById('otherLocationDiv');
+            
+            if (selectedCampus === 'Other Location') {
+                otherDiv.classList.add('show');
+            } else {
+                otherDiv.classList.remove('show');
+            }
+        }
+
+        // ==================== CAMERA FUNCTIONS ====================
+        function showCamera() {
+            document.getElementById('cameraOption').classList.add('active');
+            document.getElementById('uploadOption').classList.remove('active');
+            document.getElementById('cameraContainer').style.display = 'block';
+            document.getElementById('fileUploadContainer').style.display = 'none';
+            document.getElementById('imagePreview').style.display = 'none';
+            startCamera();
+        }
+
+        function showFileUpload() {
+            document.getElementById('uploadOption').classList.add('active');
+            document.getElementById('cameraOption').classList.remove('active');
+            document.getElementById('fileUploadContainer').style.display = 'block';
+            document.getElementById('cameraContainer').style.display = 'none';
+            document.getElementById('imagePreview').style.display = 'none';
+            stopCamera();
+        }
+
+        async function startCamera() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                document.getElementById('camera-view').srcObject = videoStream;
+                cameraActive = true;
+            } catch (err) {
+                alert('Could not access camera. Please use file upload instead.');
+                showFileUpload();
+            }
+        }
+
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+                cameraActive = false;
+            }
+        }
+
+        function capturePhoto() {
+            if (!cameraActive) {
+                alert('Camera is not active');
+                return;
+            }
+
+            const video = document.getElementById('camera-view');
+            const canvas = document.getElementById('camera-canvas');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            
+            document.getElementById('image-preview-img').src = imageDataUrl;
+            document.getElementById('imagePreview').style.display = 'inline-block';
+            document.getElementById('captured-photo').value = imageDataUrl;
+            
+            stopCamera();
+            document.getElementById('cameraContainer').style.display = 'none';
+        }
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('image-preview-img').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'inline-block';
+                    
+                    document.getElementById('file-name').innerHTML = 
+                        `<i class="fas fa-check-circle" style="color: #28a745;"></i> Selected: ${file.name}`;
+                    document.getElementById('file-name').style.display = 'block';
+                    
+                    document.getElementById('captured-photo').value = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeImage() {
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('file-name').style.display = 'none';
+            document.getElementById('file-input').value = '';
+            document.getElementById('captured-photo').value = '';
+            
+            document.getElementById('cameraOption').classList.remove('active');
+            document.getElementById('uploadOption').classList.remove('active');
+        }
+
+        // Form validation
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            const itemName = document.getElementById('item_name').value;
+            const category = document.getElementById('main_category').value;
+            const campus = document.getElementById('campus_select').value;
+            const otherLocation = document.getElementById('other_location_text').value;
+            const capturedPhoto = document.getElementById('captured-photo').value;
+            const fileInput = document.getElementById('file-input').files.length;
+            
+            if (!category) {
+                e.preventDefault();
+                alert('Please select a category');
+                return;
+            }
+
+            if (category !== 'other' && !itemName) {
+                e.preventDefault();
+                alert('Please select an item from the list');
+                return;
+            }
+
+            if (category === 'other') {
+                const customItem = document.getElementById('custom_item').value;
+                if (!customItem) {
+                    e.preventDefault();
+                    alert('Please specify the item you found');
+                    return;
+                }
+            }
+
+            if (!campus) {
+                e.preventDefault();
+                alert('Please select a campus');
+                return;
+            }
+
+            if (campus === 'Other Location' && !otherLocation.trim()) {
+                e.preventDefault();
+                alert('Please specify the location');
+                return;
+            }
+
+            if (!capturedPhoto && fileInput === 0) {
+                e.preventDefault();
+                alert('Please take a photo or upload an image of the item');
+                return;
+            }
+        });
+
+        // Clean up camera on page unload
+        window.addEventListener('beforeunload', function() {
+            stopCamera();
+        });
+
+        // Set max date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.querySelector('input[type="date"]').setAttribute('max', today);
+    </script>
+</body>
+</html>

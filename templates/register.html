@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register · DUT Lost & Found</title>
+    <!-- Poppins font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem;
+            position: relative;
+        }
+
+        /* Subtle Pattern Overlay */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 1;
+        }
+
+        /* Soft Blue Accent Line */
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4a90e2 0%, #4a90e2 30%, #ffffff 30%, #ffffff 100%);
+            z-index: 3;
+        }
+
+        .register-card {
+            display: flex;
+            background: #111111;
+            width: 950px;
+            max-width: 100%;
+            border-radius: 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transition: transform 0.2s ease;
+            z-index: 2;
+            border: 1px solid #2a2a2a;
+            position: relative;
+        }
+
+        .register-card:hover {
+            transform: scale(1.01);
+        }
+
+        /* Subtle Corner Accents */
+        .register-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, transparent 50%, #2a2a2a 50%);
+            z-index: 1;
+        }
+
+        .register-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(225deg, transparent 50%, #4a90e2 50%);
+            z-index: 1;
+            opacity: 0.15;
+        }
+
+        /* Left side - DUT Branding */
+        .brand-side {
+            width: 40%;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1.5rem;
+            position: relative;
+            text-align: center;
+            color: white;
+            border-right: 1px solid #2a2a2a;
+        }
+
+        .dut-icon-large {
+            width: 100px;
+            height: 100px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            border: 2px solid #4a90e2;
+        }
+
+        .dut-icon-large i {
+            font-size: 3rem;
+            color: #4a90e2;
+        }
+
+        .brand-side h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .brand-side h2 span {
+            color: #4a90e2;
+            font-weight: 300;
+        }
+
+        .brand-tagline {
+            color: #888888;
+            font-size: 0.9rem;
+            margin-bottom: 2.5rem;
+            letter-spacing: 1px;
+        }
+
+        .brand-quote {
+            margin: 2rem 0;
+            font-style: italic;
+            color: #777777;
+            border-left: 3px solid #4a90e2;
+            padding-left: 1rem;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .brand-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .brand-stat {
+            text-align: center;
+        }
+
+        .brand-stat .number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4a90e2;
+        }
+
+        .brand-stat .label {
+            font-size: 0.7rem;
+            color: #888888;
+            text-transform: uppercase;
+        }
+
+        /* Right side - Form */
+        .form-side {
+            width: 60%;
+            padding: 2.5rem;
+            background: #111111;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-side::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .form-side::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 10px;
+        }
+
+        .form-side::-webkit-scrollbar-thumb {
+            background: #4a90e2;
+            border-radius: 10px;
+        }
+
+        .form-header {
+            margin-bottom: 2rem;
+        }
+
+        .form-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-header h2 i {
+            color: #4a90e2;
+            font-size: 2rem;
+        }
+
+        .form-sub {
+            color: #888888;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+            font-size: 0.9rem;
+            border-left: 3px solid #4a90e2;
+            padding-left: 15px;
+        }
+
+        /* Flash message styles */
+        .flash-messages {
+            margin-bottom: 1.5rem;
+        }
+
+        .flash-message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+        }
+
+        .flash-message.success {
+            color: #4a90e2;
+        }
+
+        .flash-message.danger {
+            color: #dc3545;
+        }
+
+        .flash-message.warning {
+            color: #ffc107;
+        }
+
+        .flash-message i {
+            font-size: 1.1rem;
+        }
+
+        .input-field {
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .input-field label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #cccccc;
+            display: block;
+            margin-bottom: 3px;
+            margin-left: 5px;
+        }
+
+        .input-field label i {
+            width: 20px;
+            color: #4a90e2;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #1a1a1a;
+            border-radius: 30px;
+            padding: 0 15px;
+            border: 1.5px solid #333333;
+            transition: 0.15s;
+        }
+
+        .input-wrapper:hover {
+            background: #222222;
+            border-color: #4a90e2;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #4a90e2;
+            background: #222222;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .input-wrapper i {
+            color: #4a90e2;
+            font-size: 0.9rem;
+            width: 24px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 12px 0 12px 4px;
+            font-size: 0.9rem;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            outline: none;
+        }
+
+        /* Hide placeholder */
+        .input-wrapper input::-webkit-input-placeholder {
+            color: transparent;
+        }
+        .input-wrapper input:-moz-placeholder {
+            color: transparent;
+        }
+        .input-wrapper input::-moz-placeholder {
+            color: transparent;
+        }
+        .input-wrapper input:-ms-input-placeholder {
+            color: transparent;
+        }
+
+        /* Hide autofill background */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #1a1a1a inset !important;
+            -webkit-text-fill-color: white !important;
+        }
+
+        .hint-text {
+            font-size: 0.7rem;
+            color: #888888;
+            margin-top: 4px;
+            margin-left: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .hint-text i {
+            font-size: 0.65rem;
+            color: #4a90e2;
+        }
+
+        .input-wrapper.invalid {
+            border-color: #dc3545;
+            background: #2a1a1a;
+        }
+
+        .input-wrapper.valid {
+            border-color: #4a90e2;
+            background: #1a2a2a;
+        }
+
+        .validation-message {
+            font-size: 0.7rem;
+            margin-top: 4px;
+            margin-left: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .validation-message.error {
+            color: #dc3545;
+        }
+
+        .validation-message.success {
+            color: #4a90e2;
+        }
+
+        .student-number-preview {
+            background: #1a1a1a;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            color: #4a90e2;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #333333;
+        }
+
+        .student-number-preview i {
+            color: #4a90e2;
+        }
+
+        /* ID Number validation styles */
+        .id-info {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 15px;
+            margin: 10px 0;
+            font-size: 0.75rem;
+            border: 1px solid #333333;
+        }
+
+        .id-info p {
+            color: #cccccc;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .id-info ul {
+            list-style: none;
+            padding-left: 5px;
+        }
+
+        .id-info li {
+            margin: 3px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #888888;
+            font-size: 0.7rem;
+        }
+
+        .id-info li i {
+            color: #4a90e2;
+            font-size: 0.6rem;
+        }
+
+        .id-preview {
+            background: #1a2a2a;
+            color: #4a90e2;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #4a90e2;
+        }
+
+        /* Password requirements styles */
+        .password-requirements {
+            background: #1a1a1a;
+            padding: 12px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            border: 1px solid #333333;
+        }
+
+        .password-requirements p {
+            color: #cccccc;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .password-requirements ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .password-requirements li {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #888888;
+            font-size: 0.75rem;
+        }
+
+        .password-requirements li i {
+            width: 16px;
+            font-size: 0.7rem;
+        }
+
+        .password-requirements li.valid {
+            color: #4a90e2;
+        }
+
+        .password-requirements li.invalid {
+            color: #dc3545;
+        }
+
+        .password-format-example {
+            background: #222222;
+            color: #4a90e2;
+            padding: 8px 12px;
+            border-radius: 50px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #4a90e2;
+        }
+
+        .dob-preview {
+            background: #1a2a2a;
+            color: #4a90e2;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #4a90e2;
+        }
+
+        /* terms row */
+        .terms-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 1rem 0 1.2rem;
+            font-size: 0.85rem;
+            background: #1a1a1a;
+            padding: 8px 14px;
+            border-radius: 40px;
+            color: #cccccc;
+            border: 1px solid #333333;
+        }
+
+        .terms-row input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #4a90e2;
+            margin: 0;
+        }
+
+        .terms-row label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 450;
+        }
+
+        .terms-row a {
+            color: #4a90e2;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px dotted #4a90e2;
+        }
+
+        /* register button */
+        .register-btn {
+            background: #4a90e2;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.9rem 1.5rem;
+            width: 100%;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 12px 22px -10px rgba(74, 144, 226, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .register-btn:hover {
+            background: #3a7bc8;
+            transform: translateY(-3px);
+            box-shadow: 0 18px 30px -10px rgba(74, 144, 226, 0.4);
+        }
+
+        .register-btn:disabled {
+            background: #333333;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .signin-link {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888888;
+        }
+
+        .signin-link a {
+            color: #4a90e2;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 2px solid #333333;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .signin-link a:hover {
+            border-bottom-color: #4a90e2;
+        }
+
+        .safe-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 1.2rem;
+            font-size: 0.7rem;
+            color: #666666;
+        }
+
+        .safe-badge i {
+            color: #4a90e2;
+        }
+
+        .dut-footer {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #2a2a2a;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #666666;
+        }
+
+        .dut-footer i {
+            color: #4a90e2;
+        }
+
+        @media (max-width: 700px) {
+            .register-card {
+                flex-direction: column;
+            }
+            .brand-side, .form-side {
+                width: 100%;
+            }
+            .form-side {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <!-- Left side - DUT Branding -->
+        <div class="brand-side">
+            <div class="dut-icon-large">
+                <i class="fas fa-university"></i>
+            </div>
+            <h2>DUT <span>|</span> Lost & Found</h2>
+            <div class="brand-tagline">DURBAN UNIVERSITY OF TECHNOLOGY</div>
+            
+            <div class="brand-quote">
+                <i class="fas fa-quote-left" style="color: #4a90e2; margin-right: 5px;"></i>
+                Join our community and help reunite students with their lost belongings.
+            </div>
+
+            <div class="brand-stats">
+                <div class="brand-stat">
+                    <div class="number">500+</div>
+                    <div class="label">ITEMS FOUND</div>
+                </div>
+                <div class="brand-stat">
+                    <div class="number">95%</div>
+                    <div class="label">RECOVERY RATE</div>
+                </div>
+                <div class="brand-stat">
+                    <div class="number">1K+</div>
+                    <div class="label">USERS</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side: registration form -->
+        <div class="form-side">
+            <div class="form-header">
+                <h2>
+                    <i class="fas fa-pen-to-square"></i> Sign Up
+                </h2>
+                <div class="form-sub">
+                    <i class="fas fa-id-card"></i> create your DUT4Life account
+                </div>
+            </div>
+
+            <!-- Flash messages section -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Registration form with anti-autofill -->
+            <form method="POST" action="/register" id="registerForm" autocomplete="off">
+                <!-- Honeypot fields to confuse autofill -->
+                <input type="text" name="fake-username" style="display: none;">
+                <input type="password" name="fake-password" style="display: none;">
+                
+                <!-- Full Name field -->
+                <div class="input-field">
+                    <label for="full_name"><i class="fas fa-user"></i> Full Name</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user-circle"></i>
+                        <input type="text" 
+                               id="full_name" 
+                               name="full_name" 
+                               required
+                               readonly
+                               onfocus="this.removeAttribute('readonly')"
+                               value="">
+                    </div>
+                </div>
+
+                <!-- ID Number field -->
+                <div class="input-field">
+                    <label for="id_number"><i class="fas fa-id-card"></i> SA ID Number</label>
+                    <div class="input-wrapper" id="id-wrapper">
+                        <i class="fas fa-address-card"></i>
+                        <input type="text" 
+                               id="id_number" 
+                               name="id_number" 
+                               maxlength="13"
+                               pattern="[0-9]{13}"
+                               required
+                               readonly
+                               onfocus="this.removeAttribute('readonly')"
+                               value="">
+                    </div>
+                    
+                    <!-- ID Number info box -->
+                    <div class="id-info">
+                        <p><i class="fas fa-shield-alt"></i> ID Number Validation:</p>
+                        <ul>
+                            <li id="id-length"><i class="far fa-circle"></i> Must be 13 digits</li>
+                            <li id="id-numbers"><i class="far fa-circle"></i> Numbers only</li>
+                            <li id="id-format"><i class="far fa-circle"></i> Format: YYMMDD followed by 7 digits</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- ID Preview -->
+                    <div id="id-preview" class="id-preview" style="display: none;">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Birth Date: <strong id="birth-date-display"></strong> (YY/MM/DD)</span>
+                    </div>
+                    
+                    <div id="id-validation" class="validation-message"></div>
+                </div>
+
+                <!-- Student number preview (from email) -->
+                <div class="student-number-preview" id="studentPreview" style="display: none;">
+                    <i class="fas fa-id-card"></i>
+                    <span>Student Number: <strong id="studentNumberDisplay"></strong></span>
+                </div>
+
+                <!-- Email field -->
+                <div class="input-field">
+                    <label for="email"><i class="fas fa-envelope"></i> DUT4Life Email</label>
+                    <div class="input-wrapper" id="email-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" 
+                               id="email" 
+                               name="email" 
+                               pattern="^\d{8}@dut4life\.ac\.za$"
+                               required
+                               readonly
+                               onfocus="this.removeAttribute('readonly')"
+                               value="">
+                    </div>
+                    <div id="email-validation" class="validation-message"></div>
+                </div>
+
+                <!-- Phone field (optional) -->
+                <div class="input-field">
+                    <label for="phone"><i class="fas fa-phone"></i> Phone Number (optional)</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-phone-alt"></i>
+                        <input type="tel" 
+                               id="phone" 
+                               name="phone" 
+                               readonly
+                               onfocus="this.removeAttribute('readonly')"
+                               value="">
+                    </div>
+                </div>
+
+                <!-- Password field -->
+                <div class="input-field">
+                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <div class="input-wrapper" id="password-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               pattern="^\$\$Dut\d{6}$"
+                               required
+                               readonly
+                               onfocus="this.removeAttribute('readonly')"
+                               value="">
+                    </div>
+                    
+                    <!-- Password format requirements -->
+                    <div class="password-requirements">
+                        <p><i class="fas fa-shield-alt"></i> Password Format:</p>
+                        <ul>
+                            <li id="req-start">
+                                <i class="fas fa-circle"></i> Start with <strong>$$Dut</strong>
+                            </li>
+                            <li id="req-digits">
+                                <i class="fas fa-circle"></i> Followed by <strong>6 digits</strong>
+                            </li>
+                            <li id="req-match">
+                                <i class="fas fa-circle"></i> 6 digits must match your ID's first 6 digits (YYMMDD)
+                            </li>
+                        </ul>
+                        <div class="password-format-example" id="password-example">
+                            $$Dut + ID digits
+                        </div>
+                        <div id="dob-preview" class="dob-preview" style="display: none;">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Date of Birth: <strong id="dob-display"></strong> (YY/MM/DD)</span>
+                        </div>
+                    </div>
+                    
+                    <div id="password-validation" class="validation-message"></div>
+                </div>
+
+                <!-- Confirm Password field -->
+                <div class="input-field">
+                    <label for="confirm_password"><i class="fas fa-lock"></i> Confirm Password</label>
+                    <div class="input-wrapper" id="confirm-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" 
+                               id="confirm_password" 
+                               name="confirm_password" 
+                               required
+                               readonly
+                               onfocus="this.removeAttribute('readonly')"
+                               value="">
+                    </div>
+                    <div id="confirm-validation" class="validation-message"></div>
+                </div>
+
+                
+
+                <!-- Register button -->
+                <button type="submit" class="register-btn" id="registerBtn">
+                    <span>Create Account</span> <i class="fas fa-arrow-right-to-bracket"></i>
+                </button>
+            </form>
+
+            <!-- Sign in link -->
+            <div class="signin-link">
+                <i class="fas fa-question-circle"></i> Already have an account? 
+                <a href="/login">
+                    Sign in <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+
+            <!-- DUT Footer -->
+            <div class="dut-footer">
+                <i class="fas fa-copyright"></i> 2026 Durban University of Technology · DUT4Life
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for real-time validation with ID-password matching -->
+    <script>
+        // Clear any autofilled values on page load
+        window.addEventListener('load', function() {
+            document.getElementById('full_name').value = '';
+            document.getElementById('id_number').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('confirm_password').value = '';
+        });
+        
+        window.addEventListener('pageshow', function() {
+            document.getElementById('full_name').value = '';
+            document.getElementById('id_number').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('confirm_password').value = '';
+        });
+
+        // ==================== ID NUMBER VALIDATION ====================
+        const idInput = document.getElementById('id_number');
+        const idWrapper = document.getElementById('id-wrapper');
+        const idValidation = document.getElementById('id-validation');
+        const idPreview = document.getElementById('id-preview');
+        const birthDateDisplay = document.getElementById('birth-date-display');
+        const idLength = document.getElementById('id-length');
+        const idNumbers = document.getElementById('id-numbers');
+        const idFormat = document.getElementById('id-format');
+
+        idInput.addEventListener('input', function() {
+            const id = this.value.replace(/\s/g, '');
+            
+            if (id.length > 0) {
+                // Length check
+                if (id.length === 13) {
+                    idLength.innerHTML = '<i class="fas fa-check-circle" style="color: #4a90e2;"></i> ✓ 13 digits';
+                } else {
+                    idLength.innerHTML = '<i class="fas fa-circle"></i> Must be 13 digits (currently ' + id.length + ')';
+                }
+                
+                // Numbers only check
+                if (/^\d+$/.test(id)) {
+                    idNumbers.innerHTML = '<i class="fas fa-check-circle" style="color: #4a90e2;"></i> ✓ Numbers only';
+                } else {
+                    idNumbers.innerHTML = '<i class="fas fa-circle"></i> Numbers only';
+                }
+                
+                // Check if it's exactly 13 digits
+                if (!/^\d{13}$/.test(id)) {
+                    idWrapper.classList.remove('valid');
+                    idWrapper.classList.add('invalid');
+                    idValidation.classList.remove('success');
+                    idValidation.classList.add('error');
+                    idValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> ID must be exactly 13 digits';
+                    idFormat.innerHTML = '<i class="fas fa-circle"></i> Format: YYMMDD followed by 7 digits';
+                    idPreview.style.display = 'none';
+                    validatePasswordMatch(); // Revalidate password
+                    return;
+                }
+                
+                // Extract birth date components (first 6 digits: YYMMDD)
+                const year = id.substring(0, 2);
+                const month = id.substring(2, 4);
+                const day = id.substring(4, 6);
+                
+                // Validate month (01-12)
+                const monthNum = parseInt(month, 10);
+                if (monthNum < 1 || monthNum > 12) {
+                    idWrapper.classList.remove('valid');
+                    idWrapper.classList.add('invalid');
+                    idValidation.classList.remove('success');
+                    idValidation.classList.add('error');
+                    idValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid month (must be 01-12)';
+                    idFormat.innerHTML = '<i class="fas fa-circle"></i> Format: YYMMDD followed by 7 digits';
+                    idPreview.style.display = 'none';
+                    validatePasswordMatch(); // Revalidate password
+                    return;
+                }
+                
+                // Validate day based on month
+                const dayNum = parseInt(day, 10);
+                const daysInMonth = {
+                    1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30,
+                    7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31
+                };
+                
+                if (dayNum < 1 || dayNum > daysInMonth[monthNum]) {
+                    idWrapper.classList.remove('valid');
+                    idWrapper.classList.add('invalid');
+                    idValidation.classList.remove('success');
+                    idValidation.classList.add('error');
+                    idValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid day for this month';
+                    idFormat.innerHTML = '<i class="fas fa-circle"></i> Format: YYMMDD followed by 7 digits';
+                    idPreview.style.display = 'none';
+                    validatePasswordMatch(); // Revalidate password
+                    return;
+                }
+                
+                // If all checks pass - valid ID
+                idWrapper.classList.remove('invalid');
+                idWrapper.classList.add('valid');
+                idValidation.classList.remove('error');
+                idValidation.classList.add('success');
+                idValidation.innerHTML = '<i class="fas fa-check-circle"></i> Valid SA ID number ✓';
+                idFormat.innerHTML = '<i class="fas fa-check-circle" style="color: #4a90e2;"></i> ✓ Valid format';
+                
+                // Show preview with birth date
+                idPreview.style.display = 'flex';
+                const birthDate = `${year}/${month}/${day}`;
+                birthDateDisplay.textContent = birthDate;
+                
+                // Validate password against ID
+                validatePasswordMatch();
+                
+            } else {
+                idWrapper.classList.remove('valid', 'invalid');
+                idValidation.innerHTML = '';
+                idPreview.style.display = 'none';
+                
+                // Reset indicators
+                idLength.innerHTML = '<i class="far fa-circle"></i> Must be 13 digits';
+                idNumbers.innerHTML = '<i class="far fa-circle"></i> Numbers only';
+                idFormat.innerHTML = '<i class="far fa-circle"></i> Format: YYMMDD followed by 7 digits';
+            }
+        });
+
+        // ==================== EMAIL VALIDATION ====================
+        const emailInput = document.getElementById('email');
+        const emailWrapper = document.getElementById('email-wrapper');
+        const emailValidation = document.getElementById('email-validation');
+        const studentPreview = document.getElementById('studentPreview');
+        const studentNumberDisplay = document.getElementById('studentNumberDisplay');
+        
+        emailInput.addEventListener('input', function() {
+            const email = this.value.toLowerCase();
+            const dutPattern = /^(\d{8})@dut4life\.ac\.za$/;
+            const match = email.match(dutPattern);
+            
+            if (email.length > 0) {
+                if (match) {
+                    emailWrapper.classList.remove('invalid');
+                    emailWrapper.classList.add('valid');
+                    emailValidation.classList.remove('error');
+                    emailValidation.classList.add('success');
+                    emailValidation.innerHTML = '<i class="fas fa-check-circle"></i> Valid DUT4Life email';
+                    
+                    studentPreview.style.display = 'flex';
+                    studentNumberDisplay.textContent = match[1];
+                } else {
+                    emailWrapper.classList.remove('valid');
+                    emailWrapper.classList.add('invalid');
+                    emailValidation.classList.remove('success');
+                    emailValidation.classList.add('error');
+                    
+                    if (email.includes('@')) {
+                        if (!email.endsWith('@dut4life.ac.za')) {
+                            emailValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> Must end with @dut4life.ac.za';
+                        } else {
+                            emailValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> Student number must be 8 digits';
+                        }
+                    } else {
+                        emailValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> Use format: 8-digit-number@dut4life.ac.za';
+                    }
+                    
+                    studentPreview.style.display = 'none';
+                }
+            } else {
+                emailWrapper.classList.remove('valid', 'invalid');
+                emailValidation.innerHTML = '';
+                studentPreview.style.display = 'none';
+            }
+        });
+
+        // ==================== PASSWORD VALIDATION ====================
+        const passwordInput = document.getElementById('password');
+        const passwordWrapper = document.getElementById('password-wrapper');
+        const passwordValidation = document.getElementById('password-validation');
+        const confirmInput = document.getElementById('confirm_password');
+        const confirmWrapper = document.getElementById('confirm-wrapper');
+        const confirmValidation = document.getElementById('confirm-validation');
+        const reqStart = document.getElementById('req-start');
+       

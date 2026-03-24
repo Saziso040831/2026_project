@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUT Lost & Found · Home</title>
+    <!-- Poppins font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: #0a0a0a; /* Soft black background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Subtle Pattern Overlay */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 1;
+        }
+
+        /* Soft Blue Accent Line */
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4a90e2 0%, #4a90e2 30%, #ffffff 30%, #ffffff 100%);
+            z-index: 3;
+        }
+
+        /* Main Container */
+        .home-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1400px;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4rem;
+        }
+
+        /* Left Side - DUT Branding */
+        .brand-section {
+            flex: 1;
+            color: white;
+            padding-left: 2rem;
+        }
+
+        .dut-logo-large {
+            margin-bottom: 2rem;
+        }
+
+        .dut-logo-large i {
+            font-size: 4.5rem;
+            color: #4a90e2;
+            margin-right: 1rem;
+            opacity: 0.9;
+        }
+
+        .dut-logo-large span {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #ffffff;
+        }
+
+        .dut-tagline {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            margin-bottom: 3rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .dut-tagline span {
+            color: #4a90e2;
+            font-weight: 400;
+        }
+
+        .dut-stats {
+            display: flex;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .stat-item {
+            text-align: left;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dut-quote {
+            margin-top: 4rem;
+            font-style: italic;
+            color: #777777;
+            border-left: 3px solid #4a90e2;
+            padding-left: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Right Side - Login Card */
+        .login-card {
+            flex: 0 0 450px;
+            background: #111111;
+            border-radius: 30px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2a2a2a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle Corner Accent */
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, transparent 50%, #2a2a2a 50%);
+            z-index: 1;
+        }
+
+        /* Soft Blue Corner Accent */
+        .login-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(225deg, transparent 50%, #4a90e2 50%);
+            z-index: 1;
+            opacity: 0.2;
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .dut-icon {
+            width: 80px;
+            height: 80px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            border: 2px solid #4a90e2;
+        }
+
+        .dut-icon i {
+            font-size: 2.5rem;
+            color: #4a90e2;
+        }
+
+        .card-header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.3rem;
+            letter-spacing: 0.5px;
+        }
+
+        .card-header p {
+            color: #888888;
+            font-size: 0.95rem;
+        }
+
+        .dut-badge {
+            display: inline-block;
+            background: #1a1a1a;
+            color: #4a90e2;
+            padding: 0.2rem 1rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            letter-spacing: 1px;
+            border: 1px solid #333333;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 2rem 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn {
+            padding: 1.2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-login {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .btn-login:hover {
+            background: #3a7bc8;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(74, 144, 226, 0.2);
+        }
+
+        .btn-register {
+            background: transparent;
+            color: white;
+            border: 2px solid #4a90e2;
+        }
+
+        .btn-register:hover {
+            background: #4a90e2;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(74, 144, 226, 0.2);
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #555555;
+            font-size: 0.8rem;
+            margin: 1rem 0;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: #2a2a2a;
+        }
+
+        .dut-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1.5rem 0;
+            font-size: 0.85rem;
+        }
+
+        .dut-links a {
+            color: #777777;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .dut-links a:hover {
+            color: #4a90e2;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #2a2a2a;
+            color: #666666;
+            font-size: 0.8rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-note i {
+            color: #4a90e2;
+            margin: 0 5px;
+        }
+
+        .dut-motto {
+            color: #4a90e2;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .home-container {
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .brand-section {
+                padding-left: 0;
+                text-align: center;
+            }
+
+            .dut-stats {
+                justify-content: center;
+            }
+
+            .dut-quote {
+                text-align: left;
+            }
+
+            .login-card {
+                flex: 0 0 auto;
+                width: 100%;
+                max-width: 450px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .login-card {
+                padding: 2rem;
+            }
+
+            .dut-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+                align-items: center;
+            }
+
+            .stat-item {
+                text-align: center;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .brand-section {
+            animation: fadeIn 1s ease-out;
+        }
+
+        .login-card {
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+    </style>
+</head>
+<body>
+    <div class="home-container">
+        <!-- Left Side - DUT Branding -->
+        <div class="brand-section">
+            <div class="dut-logo-large">
+                <i class="fas fa-university"></i>
+                <span>DUT</span>
+            </div>
+            
+            <div class="dut-tagline">
+                DURBAN UNIVERSITY OF TECHNOLOGY<br>
+                <span>Inspiring Greatness</span>
+            </div>
+
+            <div class="dut-stats">
+                <div class="stat-item">
+                    <div class="stat-number">33K+</div>
+                    <div class="stat-label">STUDENTS</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">CAMPUSES</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">PROGRAMMES</div>
+                </div>
+            </div>
+
+            <div class="dut-quote">
+                <i class="fas fa-quote-left" style="color: #4a90e2; margin-right: 10px;"></i>
+                The Lost and Found Management System helps reunite students<br>
+                with their belongings through our secure, trackable platform.
+            </div>
+        </div>
+
+        <!-- Right Side - Login Card -->
+        <div class="login-card">
+            <div class="card-header">
+                <div class="dut-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h1>Lost & Found</h1>
+                <p>DUT Student Portal</p>
+                <div class="dut-badge">DUT4Life</div>
+            </div>
+
+            <div class="button-group">
+                <a href="{{ url_for('login') }}" class="btn btn-login">
+                    <i class="fas fa-arrow-right-to-bracket"></i>
+                    Login to Your Account
+                </a>
+                <a href="{{ url_for('register') }}" class="btn btn-register">
+                    <i class="fas fa-user-plus"></i>
+                    Create New Account
+                </a>
+            </div>
+
+            <div class="divider">
+                <span class="divider-line"></span>
+                <span>DUT STUDENT ACCESS</span>
+                <span class="divider-line"></span>
+            </div>
+
+            <div class="dut-links">
+                <a href="#"><i class="fas fa-question-circle"></i> Help</a>
+                <a href="#"><i class="fas fa-shield-alt"></i> Privacy</a>
+                <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+            </div>
+
+            <div class="footer-note">
+                <div class="dut-motto">INSPIRING GREATNESS</div>
+                <div>
+                    <i class="fas fa-copyright"></i> 2026 Durban University of Technology
+                </div>
+                <div style="margin-top: 0.5rem; font-size: 0.7rem;">
+                    <i class="fas fa-map-marker-alt"></i> Steve Biko Campus · ML Sultan Campus · City Campus
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
