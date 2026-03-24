@@ -1064,7 +1064,7 @@ def admin_pending_claims():
                          pending_claims=pending_claims_count,
                          now=now)
 
-     @app.route('/admin/history')
+@app.route('/admin/history')
 def admin_history():
     if 'user' not in session or session['user']['role'] != 'admin':
         flash("Access denied! This area is for administrators only.", "danger")
