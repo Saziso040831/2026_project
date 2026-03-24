@@ -824,7 +824,7 @@ def admin_dashboard():
 @app.route('/admin/lost-items')
 def admin_lost_items():
     if 'user' not in session or session['user']['role'] != 'admin':
-        flash("Access denied!", "danger")
+        flash("Access denied! This area is for administrators only.", "danger")
         return redirect(url_for('login'))
     
     page = int(request.args.get('page', 1))
@@ -835,8 +835,11 @@ def admin_lost_items():
     
     conn = get_db()
     
-    sql = """SELECT li.*, u.full_name as reporter_name, u.email as reporter_email 
-             FROM lost_items li JOIN users u ON li.user_id = u.id WHERE 1=1"""
+    # Build query
+    sql = """SELECT li.*, u.full_name as reporter_name, u.email as reporter_email, u.student_number 
+             FROM lost_items li 
+             JOIN users u ON li.user_id = u.id 
+             WHERE 1=1"""
     params = []
     
     if search:
@@ -852,18 +855,29 @@ def admin_lost_items():
         sql += " AND li.status = ?"
         params.append(status)
     
-    count_sql = sql.replace("li.*, u.full_name as reporter_name, u.email as reporter_email", "COUNT(*) as count")
+    # Get total count for pagination
+    count_sql = sql.replace("li.*, u.full_name as reporter_name, u.email as reporter_email, u.student_number", "COUNT(*) as count")
     total = conn.execute(count_sql, params).fetchone()['count']
     
+    # Add sorting and pagination
     sql += " ORDER BY li.created_at DESC LIMIT ? OFFSET ?"
     params.extend([per_page, (page-1)*per_page])
     
     items = conn.execute(sql, params).fetchall()
     
+    # Get categories for filter
+    categories = conn.execute("SELECT DISTINCT category FROM lost_items").fetchall()
+    
+    # Get counts for sidebar badges and stats
     total_lost = conn.execute("SELECT COUNT(*) as count FROM lost_items").fetchone()['count']
     total_found = conn.execute("SELECT COUNT(*) as count FROM found_items").fetchone()['count']
     pending_claims = conn.execute("SELECT COUNT(*) as count FROM claims WHERE status = 'pending'").fetchone()['count']
     resolved_count = conn.execute("SELECT COUNT(*) as count FROM item_history").fetchone()['count']
+    total_users = conn.execute("SELECT COUNT(*) as count FROM users").fetchone()['count']
+    
+    # Get stats for lost items - Total Lost, Pending, Resolved
+    pending_lost_count = conn.execute("SELECT COUNT(*) as count FROM lost_items WHERE status = 'pending'").fetchone()['count']
+    resolved_lost_count = conn.execute("SELECT COUNT(*) as count FROM lost_items WHERE status = 'resolved'").fetchone()['count']
     
     conn.close()
     
@@ -878,16 +892,20 @@ def admin_lost_items():
                          search=search,
                          category=category,
                          status=status,
+                         categories=[dict(c)['category'] for c in categories],
                          total_lost=total_lost,
                          total_found=total_found,
                          pending_claims=pending_claims,
                          resolved_count=resolved_count,
+                         total_users=total_users,
+                         pending_lost_count=pending_lost_count,
+                         resolved_lost_count=resolved_lost_count,
                          now=datetime.now())
 
 @app.route('/admin/found-items')
 def admin_found_items():
     if 'user' not in session or session['user']['role'] != 'admin':
-        flash("Access denied!", "danger")
+        flash("Access denied! This area is for administrators only.", "danger")
         return redirect(url_for('login'))
     
     page = int(request.args.get('page', 1))
@@ -898,8 +916,11 @@ def admin_found_items():
     
     conn = get_db()
     
-    sql = """SELECT fi.*, u.full_name as reporter_name, u.email as reporter_email 
-             FROM found_items fi JOIN users u ON fi.user_id = u.id WHERE 1=1"""
+    # Build query
+    sql = """SELECT fi.*, u.full_name as reporter_name, u.email as reporter_email, u.student_number 
+             FROM found_items fi 
+             JOIN users u ON fi.user_id = u.id 
+             WHERE 1=1"""
     params = []
     
     if search:
@@ -915,18 +936,29 @@ def admin_found_items():
         sql += " AND fi.status = ?"
         params.append(status)
     
-    count_sql = sql.replace("fi.*, u.full_name as reporter_name, u.email as reporter_email", "COUNT(*) as count")
+    # Get total count for pagination
+    count_sql = sql.replace("fi.*, u.full_name as reporter_name, u.email as reporter_email, u.student_number", "COUNT(*) as count")
     total = conn.execute(count_sql, params).fetchone()['count']
     
+    # Add sorting and pagination
     sql += " ORDER BY fi.created_at DESC LIMIT ? OFFSET ?"
     params.extend([per_page, (page-1)*per_page])
     
     items = conn.execute(sql, params).fetchall()
     
+    # Get categories for filter
+    categories = conn.execute("SELECT DISTINCT category FROM found_items").fetchall()
+    
+    # Get counts for sidebar badges
     total_lost = conn.execute("SELECT COUNT(*) as count FROM lost_items").fetchone()['count']
     total_found = conn.execute("SELECT COUNT(*) as count FROM found_items").fetchone()['count']
     pending_claims = conn.execute("SELECT COUNT(*) as count FROM claims WHERE status = 'pending'").fetchone()['count']
     resolved_count = conn.execute("SELECT COUNT(*) as count FROM item_history").fetchone()['count']
+    total_users = conn.execute("SELECT COUNT(*) as count FROM users").fetchone()['count']
+    
+    # Get stats for found items - Total Found, Available, Resolved
+    available_items = conn.execute("SELECT COUNT(*) as count FROM found_items WHERE status = 'available'").fetchone()['count']
+    resolved_found_count = conn.execute("SELECT COUNT(*) as count FROM found_items WHERE status = 'resolved'").fetchone()['count']
     
     conn.close()
     
@@ -941,10 +973,14 @@ def admin_found_items():
                          search=search,
                          category=category,
                          status=status,
+                         categories=[dict(c)['category'] for c in categories],
                          total_lost=total_lost,
                          total_found=total_found,
                          pending_claims=pending_claims,
                          resolved_count=resolved_count,
+                         total_users=total_users,
+                         available_items=available_items,
+                         resolved_found_count=resolved_found_count,
                          now=datetime.now())
 @app.route('/admin/pending-claims')
 def admin_pending_claims():
@@ -1127,15 +1163,54 @@ def admin_handle_claim(claim_id, action):
     conn = get_db()
     status = 'approved' if action == 'approve' else 'rejected'
     
+    # First get the claim details
+    claim = conn.execute('''SELECT * FROM claims WHERE id = ?''', (claim_id,)).fetchone()
+    
+    if not claim:
+        flash("Claim not found!", "danger")
+        conn.close()
+        return redirect(url_for('admin_dashboard'))
+    
+    claim_dict = dict(claim)
+    
+    # Update claim status
     conn.execute('''UPDATE claims SET status = ?, reviewed_by = ?, reviewed_at = CURRENT_TIMESTAMP
                     WHERE id = ?''', (status, session['user']['id'], claim_id))
     
     if status == 'approved':
+        # Mark the found item as resolved
+        conn.execute('''UPDATE found_items SET status = 'resolved', resolved_at = ?, resolved_by = ?
+                        WHERE id = ?''', (datetime.now().isoformat(), session['user']['id'], claim_dict['item_id']))
+        
+        # Also mark any matching lost item if it exists
+        if claim_dict['item_type'] == 'found':
+            # Find a lost item that matches this found item
+            matching_lost = conn.execute('''
+                SELECT id FROM lost_items 
+                WHERE user_id = ? AND status = 'pending'
+                ORDER BY created_at DESC LIMIT 1
+            ''', (claim_dict['claimant_id'],)).fetchone()
+            
+            if matching_lost:
+                conn.execute('''UPDATE lost_items SET status = 'resolved', resolved_at = ?, resolved_by = ?
+                                WHERE id = ?''', (datetime.now().isoformat(), session['user']['id'], matching_lost['id']))
+        
+        # Add to history
+        conn.execute('''INSERT INTO item_history (item_id, item_type, item_name, category, 
+                       claimed_by_id, resolved_at, resolved_by, notes)
+                       SELECT ?, ?, ?, ?, ?, ?, ?, ?
+                       FROM found_items WHERE id = ?''', 
+                    (claim_dict['item_id'], claim_dict['item_type'], 
+                     'Item', 'Category', claim_dict['claimant_id'],
+                     datetime.now().isoformat(), session['user']['id'], 
+                     f"Claim approved by admin", claim_dict['item_id']))
+        
+        # Send notification
         conn.execute('''INSERT INTO notifications (user_id, type, message, created_at, is_read)
-                        SELECT claimant_id, 'claim_approved', 
-                        'Your claim has been approved! You can now arrange pickup.', ?, 0
-                        FROM claims WHERE id = ?''', (datetime.now().isoformat(), claim_id))
-        conn.commit()
+                        VALUES (?, ?, ?, ?, 0)''',
+                     (claim_dict['claimant_id'], 'claim_approved', 
+                      'Your claim has been approved! You can now arrange pickup.', 
+                      datetime.now().isoformat()))
         
         try:
             send_claim_approved_notification(claim_id)
@@ -1146,8 +1221,7 @@ def admin_handle_claim(claim_id, action):
     conn.close()
     
     flash(f"Claim {status}!", "success")
-    return redirect(url_for('admin_dashboard'))
-
+    return redirect(url_for('admin_pending_claims'))
 @app.route('/admin/delete/lost/<int:item_id>', methods=['POST'])
 def admin_delete_lost(item_id):
     if 'user' not in session or session['user']['role'] != 'admin':
