@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Reset Code · DUT Lost & Found</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 1;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4a90e2 0%, #4a90e2 30%, #ffffff 30%, #ffffff 100%);
+            z-index: 3;
+        }
+
+        .form-card {
+            position: relative;
+            z-index: 2;
+            background: #111111;
+            width: 500px;
+            max-width: 100%;
+            border-radius: 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            padding: 2.5rem;
+            border: 1px solid #2a2a2a;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-header h1 {
+            font-size: 2rem;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-header h1 i {
+            color: #4a90e2;
+        }
+
+        .form-header p {
+            color: #888888;
+            margin-top: 0.5rem;
+        }
+
+        .email-display {
+            background: #1a2a3a;
+            color: #4a90e2;
+            padding: 0.8rem;
+            border-radius: 50px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            border: 1px solid #4a90e2;
+        }
+
+        .input-field {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-field label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #cccccc;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .input-field label i {
+            margin-right: 5px;
+            color: #4a90e2;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #1a1a1a;
+            border-radius: 30px;
+            padding: 0 18px;
+            border: 1.5px solid #333333;
+            transition: 0.2s;
+        }
+
+        .input-wrapper:hover {
+            border-color: #4a90e2;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .input-wrapper i {
+            color: #4a90e2;
+            width: 24px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 15px 0;
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            outline: none;
+            text-align: center;
+            letter-spacing: 5px;
+            font-size: 1.2rem;
+        }
+
+        .flash-messages {
+            margin-bottom: 1.5rem;
+        }
+
+        .flash-message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+        }
+
+        .flash-message.success {
+            color: #4a90e2;
+        }
+
+        .flash-message.danger {
+            color: #dc3545;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3a7bc8;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #4a90e2;
+            color: #4a90e2;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .links a {
+            color: #888888;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .links a:hover {
+            color: #4a90e2;
+        }
+
+        .dut-footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #2a2a2a;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #666666;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-card">
+        <div class="form-header">
+            <h1><i class="fas fa-key"></i> Verify Reset Code</h1>
+            <p>Enter the 6-digit code sent to your email</p>
+        </div>
+
+        <div class="email-display">
+            <i class="fas fa-envelope"></i> {{ email }}
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/verify-reset-code/{{ email }}">
+            <div class="input-field">
+                <label for="reset_code"><i class="fas fa-qrcode"></i> 6-Digit Code</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-qrcode"></i>
+                    <input type="text" id="reset_code" name="reset_code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required>
+                </div>
+                <div class="help-text" style="font-size: 0.7rem; color: #888888; margin-top: 8px;">
+                    <i class="fas fa-info-circle"></i> Enter the 6-digit code from your email
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-check-circle"></i> Verify Code
+            </button>
+        </form>
+
+        <div class="links">
+            <a href="/forgot-password"><i class="fas fa-redo-alt"></i> Request New Code</a> &nbsp;|&nbsp;
+            <a href="/login"><i class="fas fa-arrow-left"></i> Back to Login</a>
+        </div>
+
+        <div class="dut-footer">
+            <i class="fas fa-copyright"></i> 2026 Durban University of Technology · DUT4Life
+        </div>
+    </div>
+
+    <script>
+        // Auto-format input to only numbers
+        const codeInput = document.getElementById('reset_code');
+        codeInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+        });
+    </script>
+</body>
+</html>

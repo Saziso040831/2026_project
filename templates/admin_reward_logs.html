@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard · DUT Lost & Found</title>
-    <!-- Poppins font -->
+    <title>Reward Logs · DUT Lost & Found</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -208,11 +206,6 @@
             border: 1px solid #333333;
         }
 
-        .badge-warning {
-            background: #ffc107;
-            color: #000;
-        }
-
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -256,7 +249,7 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -266,9 +259,7 @@
             padding: 1.5rem;
             border-radius: 15px;
             border: 1px solid #2a2a2a;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+            text-align: center;
             transition: 0.2s;
         }
 
@@ -277,118 +268,23 @@
             border-color: #4a90e2;
         }
 
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            background: #1a1a1a;
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4a90e2;
         }
 
-        .stat-icon.users { color: #4a90e2; }
-        .stat-icon.lost { color: #dc3545; }
-        .stat-icon.found { color: #4a90e2; }
-        .stat-icon.claims { color: #ffc107; }
-
-        .stat-details h3 {
-            font-size: 1.6rem;
-            color: #ffffff;
-            line-height: 1.2;
-            font-weight: 600;
-        }
-
-        .stat-details p {
+        .stat-card .stat-label {
             color: #888888;
-            font-size: 0.8rem;
-        }
-
-        .welcome-banner {
-            background: #111111;
-            border: 1px solid #2a2a2a;
-            color: #ffffff;
-            padding: 1.5rem 2rem;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-left: 4px solid #4a90e2;
-        }
-
-        .welcome-banner h2 {
-            font-size: 1.3rem;
-            margin-bottom: 0.3rem;
-            font-weight: 500;
-        }
-
-        .welcome-banner h2 i {
-            color: #4a90e2;
-            margin-right: 8px;
-        }
-
-        .welcome-banner p {
-            color: #aaaaaa;
-            font-size: 0.9rem;
-        }
-
-        .welcome-banner .date {
-            background: #1a1a1a;
-            padding: 0.5rem 1.5rem;
-            border-radius: 50px;
             font-size: 0.85rem;
-            border: 1px solid #333333;
-            color: #cccccc;
-        }
-
-        .section-card {
-            background: #111111;
-            border-radius: 15px;
-            border: 1px solid #2a2a2a;
-            margin-bottom: 2rem;
-            overflow: hidden;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.2rem 1.5rem;
-            border-bottom: 1px solid #2a2a2a;
-        }
-
-        .section-header h3 {
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        .section-header h3 i {
-            color: #4a90e2;
-        }
-
-        .section-header .badge-new {
-            background: #4a90e2;
-            color: white;
-            padding: 0.2rem 0.8rem;
-            border-radius: 50px;
-            font-size: 0.7rem;
-            margin-left: 10px;
-        }
-
-        .view-all {
-            color: #4a90e2;
-            text-decoration: none;
-            font-size: 0.85rem;
+            margin-top: 0.3rem;
         }
 
         .table-responsive {
             overflow-x: auto;
+            background: #111111;
+            border-radius: 15px;
+            border: 1px solid #2a2a2a;
         }
 
         table {
@@ -431,13 +327,38 @@
         }
 
         .status-pending {
-            background: #fff3cd;
-            color: #856404;
+            background: #2a2a2a;
+            color: #ffc107;
+            border: 1px solid #ffc107;
         }
 
         .status-delivered {
-            background: #d4edda;
-            color: #155724;
+            background: #1a2a1a;
+            color: #4a90e2;
+            border: 1px solid #4a90e2;
+        }
+
+        .reward-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.3rem 0.8rem;
+            background: #1a1a1a;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .reward-free-lunch {
+            color: #4a90e2;
+        }
+
+        .reward-cash {
+            color: #28a745;
+        }
+
+        .reward-miracle {
+            color: #ffc107;
         }
 
         .btn-icon {
@@ -513,11 +434,6 @@
                 gap: 1rem;
                 text-align: center;
             }
-            .welcome-banner {
-                flex-direction: column;
-                text-align: center;
-                gap: 1rem;
-            }
         }
     </style>
 </head>
@@ -548,7 +464,7 @@
             
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="/admin/dashboard" class="nav-link active">
+                    <a href="/admin/dashboard" class="nav-link">
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
                     </a>
@@ -571,11 +487,11 @@
                     <a href="/admin/pending-claims" class="nav-link">
                         <i class="fas fa-clock"></i>
                         <span>Pending Claims</span>
-                        <span class="badge badge-warning">{{ pending_claims }}</span>
+                        <span class="badge" style="background: #ffc107; color: #000;">{{ pending_claims }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/reward-logs" class="nav-link">
+                    <a href="/admin/reward-logs" class="nav-link active">
                         <i class="fas fa-gift"></i>
                         <span>Reward Logs</span>
                     </a>
@@ -599,205 +515,110 @@
         <div class="main-content">
             <div class="top-bar">
                 <div class="page-title">
-                    <h1>Admin Dashboard</h1>
-                    <p>Review and manage pending claims</p>
+                    <h1><i class="fas fa-gift"></i> Reward Selection Logs</h1>
+                    <p>Track all rewards selected by honest finders</p>
                 </div>
                 <div class="admin-badge">
                     <i class="fas fa-shield-alt"></i> Admin Access
                 </div>
             </div>
-            
-            <div class="welcome-banner">
-                <div>
-                    <h2><i class="fas fa-user-shield"></i> Welcome back, {{ user.full_name }}</h2>
-                    <p><i class="fas fa-calendar-alt"></i> {{ now.strftime('%A, %d %B %Y') }}</p>
-                </div>
-                <div class="date">
-                    <i class="fas fa-clock"></i> 
-                    {% if now.hour < 12 %}Morning Shift
-                    {% elif now.hour < 18 %}Afternoon Shift
-                    {% else %}Evening Shift{% endif %}
-                </div>
-            </div>
-            
+
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon users">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>{{ total_users }}</h3>
-                        <p>Total Users</p>
-                    </div>
+                    <div class="stat-value">{{ total_rewards }}</div>
+                    <div class="stat-label">Total Rewards</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon lost">
-                        <i class="fas fa-archive"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>{{ total_lost }}</h3>
-                        <p>Lost Items</p>
-                    </div>
+                    <div class="stat-value">{{ pending_rewards }}</div>
+                    <div class="stat-label">Pending Delivery</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon found">
-                        <i class="fas fa-hand-holding-heart"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>{{ total_found }}</h3>
-                        <p>Found Items</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon claims">
-                        <i class="fas fa-file-signature"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>{{ pending_claims }}</h3>
-                        <p>Pending Claims</p>
-                    </div>
+                    <div class="stat-value">{{ delivered_rewards }}</div>
+                    <div class="stat-label">Delivered</div>
                 </div>
             </div>
-            
-            <!-- Pending Claims Section -->
-            <div class="section-card">
-                <div class="section-header">
-                    <h3><i class="fas fa-clock"></i> Pending Claims Review</h3>
-                    <a href="/admin/pending-claims" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
-                </div>
-                {% if pending_claims > 0 %}
-                <div class="table-responsive">
-                    <table>
-                        <thead>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Finder</th>
+                            <th>Contact</th>
+                            <th>Item Found</th>
+                            <th>Reward Selected</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if rewards %}
+                            {% for reward in rewards %}
                             <tr>
-                                <th>ID</th>
-                                <th>Item</th>
-                                <th>Claimant</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6" class="empty-state">
-                                    <i class="fas fa-clock"></i>
-                                    <p>Click "View All" to see pending claims</p>
+                                <td>{{ reward.selected_at[:10] }}</td>
+                                <td>
+                                    <strong>{{ reward.finder_name }}</strong>
+                                </td>
+                                <td>
+                                    <i class="fas fa-envelope"></i> {{ reward.finder_email }}<br>
+                                    {% if reward.finder_phone %}
+                                    <i class="fas fa-phone"></i> {{ reward.finder_phone }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ reward.item_name }}</strong><br>
+                                    <small style="color: #888888;">Found at: {{ reward.found_location }}</small><br>
+                                    <small style="color: #888888;">Date found: {{ reward.date_found }}</small>
+                                </td>
+                                <td>
+                                    {% if 'Free Lunch' in reward.reward_type %}
+                                        <span class="reward-badge reward-free-lunch">
+                                            <i class="fas fa-utensils"></i> Free Lunch
+                                        </span>
+                                    {% elif 'Cash' in reward.reward_type %}
+                                        <span class="reward-badge reward-cash">
+                                            <i class="fas fa-money-bill-wave"></i> Cash Voucher
+                                        </span>
+                                    {% else %}
+                                        <span class="reward-badge reward-miracle">
+                                            <i class="fas fa-gift"></i> Miracle Box
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ reward.reward_value }}</td>
+                                <td>
+                                    <span class="status-badge {% if reward.status == 'pending' %}status-pending{% else %}status-delivered{% endif %}">
+                                        {{ reward.status|capitalize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if reward.status == 'pending' %}
+                                    <form method="POST" action="/admin/mark-reward-delivered/{{ reward.id }}" style="display: inline;">
+                                        <button type="submit" class="btn-icon" title="Mark as Delivered" onclick="return confirm('Mark this reward as delivered? The finder will be notified.')">
+                                            <i class="fas fa-check-circle"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span style="color: #4a90e2;">
+                                        <i class="fas fa-check-circle"></i>
+                                    </span>
+                                    {% endif %}
                                 </td>
                             </tr>
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="empty-state" style="padding: 3rem; text-align: center;">
-                    <i class="fas fa-check-circle"></i>
-                    <p>No pending claims to review</p>
-                </div>
-                {% endif %}
-            </div>
-            
-            <!-- Reward Selections Section -->
-            <div class="section-card">
-                <div class="section-header">
-                    <h3><i class="fas fa-gift"></i> Recent Reward Selections</h3>
-                    <a href="/admin/reward-logs" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
-                </div>
-                
-                <div class="table-responsive">
-                    <table>
-                        <thead>
+                            {% endfor %}
+                        {% else %}
                             <tr>
-                                <th>Finder</th>
-                                <th>Contact</th>
-                                <th>Item</th>
-                                <th>Reward Selected</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <td colspan="8" class="empty-state">
+                                    <i class="fas fa-gift"></i>
+                                    <p>No reward selections yet</p>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% if recent_rewards %}
-                                {% for reward in recent_rewards %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ reward.finder_name }}</strong>
-                                    </td>
-                                    <td>
-                                        <i class="fas fa-envelope"></i> {{ reward.finder_email }}<br>
-                                        {% if reward.finder_phone %}
-                                        <i class="fas fa-phone"></i> {{ reward.finder_phone }}
-                                        {% endif %}
-                                    </td>
-                                    <td><strong>{{ reward.item_name }}</strong></td>
-                                    <td>
-                                        <span style="color: #ffd700;">
-                                            {% if 'Free Lunch' in reward.reward_type %}
-                                                🍽️ {{ reward.reward_type }}
-                                            {% elif 'Cash' in reward.reward_type %}
-                                                💰 {{ reward.reward_type }}
-                                            {% else %}
-                                                🎁 {{ reward.reward_type }}
-                                            {% endif %}
-                                        </span>
-                                        <br>
-                                        <small>Value: {{ reward.reward_value }}</small>
-                                    </td>
-                                    <td>{{ reward.selected_at[:10] }}</td>
-                                    <td>
-                                        <span class="status-badge {% if reward.status == 'pending' %}status-pending{% else %}status-delivered{% endif %}">
-                                            {{ reward.status }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if reward.status == 'pending' %}
-                                        <form method="POST" action="/admin/mark-reward-delivered/{{ reward.id }}" style="display: inline;">
-                                            <button type="submit" class="btn-icon" title="Mark as Delivered" onclick="return confirm('Mark this reward as delivered? The finder will be notified.')">
-                                                <i class="fas fa-check-circle" style="color: #28a745;"></i>
-                                            </button>
-                                        </form>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="7" class="empty-state">
-                                        <i class="fas fa-gift"></i>
-                                        <p>No rewards selected yet</p>
-                                    </td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
+                        {% endif %}
+                    </tbody>
+                </table>
             </div>
-            
-            <!-- Recent Activity Summary -->
-            <div class="section-card">
-                <div class="section-header">
-                    <h3><i class="fas fa-chart-line"></i> Recent Activity</h3>
-                    <a href="/admin/history" class="view-all">View Full History <i class="fas fa-arrow-right"></i></a>
-                </div>
-                <div style="padding: 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                    <div style="text-align: center; padding: 1rem; background: #1a1a1a; border-radius: 10px;">
-                        <i class="fas fa-archive" style="color: #dc3545; font-size: 2rem; margin-bottom: 0.5rem;"></i>
-                        <h4 style="color: #ffffff;">{{ total_lost }}</h4>
-                        <p style="color: #888888; font-size: 0.85rem;">Total Lost Items</p>
-                    </div>
-                    <div style="text-align: center; padding: 1rem; background: #1a1a1a; border-radius: 10px;">
-                        <i class="fas fa-hand-holding-heart" style="color: #28a745; font-size: 2rem; margin-bottom: 0.5rem;"></i>
-                        <h4 style="color: #ffffff;">{{ total_found }}</h4>
-                        <p style="color: #888888; font-size: 0.85rem;">Total Found Items</p>
-                    </div>
-                    <div style="text-align: center; padding: 1rem; background: #1a1a1a; border-radius: 10px;">
-                        <i class="fas fa-check-circle" style="color: #4a90e2; font-size: 2rem; margin-bottom: 0.5rem;"></i>
-                        <h4 style="color: #ffffff;">{{ resolved_count }}</h4>
-                        <p style="color: #888888; font-size: 0.85rem;">Resolved Items</p>
-                    </div>
-                </div>
-            </div>
-            
+
             <div class="dut-footer">
                 <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 1rem;">
                     <i class="fas fa-university" style="font-size: 1.5rem; color: #4a90e2;"></i>
