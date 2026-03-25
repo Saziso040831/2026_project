@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reward Logs · DUT Lost & Found</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4a90e2 0%, #4a90e2 30%, #ffffff 30%, #ffffff 100%);
+            z-index: 1000;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #111111;
+            color: #ffffff;
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid #2a2a2a;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid #2a2a2a;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .admin-logo {
+            width: 80px;
+            height: 80px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            border: 2px solid #4a90e2;
+        }
+
+        .admin-logo i {
+            font-size: 2.5rem;
+            color: #4a90e2;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #ffffff;
+        }
+
+        .sidebar-header h2 i {
+            color: #4a90e2;
+        }
+
+        .sidebar-header p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 5px;
+            color: #cccccc;
+        }
+
+        .admin-badge-sidebar {
+            background: #4a90e2;
+            color: white;
+            padding: 0.2rem 1rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .admin-info {
+            padding: 1.5rem;
+            background: #1a1a1a;
+            margin: 0 1rem 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #2a2a2a;
+        }
+
+        .admin-avatar {
+            width: 70px;
+            height: 70px;
+            background: #2a2a2a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            color: #4a90e2;
+            border: 2px solid #4a90e2;
+        }
+
+        .admin-info .name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        .admin-info .role-badge {
+            background: #4a90e2;
+            color: white;
+            padding: 0.2rem 1rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 1.5rem;
+            color: #aaaaaa;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: #1a1a1a;
+            color: #ffffff;
+            border-left: 3px solid #4a90e2;
+        }
+
+        .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+            color: #4a90e2;
+        }
+
+        .badge {
+            background: #2a2a2a;
+            color: #4a90e2;
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-size: 0.65rem;
+            margin-left: auto;
+            font-weight: 600;
+            border: 1px solid #333333;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            background: #0a0a0a;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: #111111;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .page-title h1 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .page-title p {
+            color: #888888;
+            font-size: 0.85rem;
+        }
+
+        .admin-badge {
+            background: #4a90e2;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #111111;
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid #2a2a2a;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: #4a90e2;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4a90e2;
+        }
+
+        .stat-card .stat-label {
+            color: #888888;
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            background: #111111;
+            border-radius: 15px;
+            border: 1px solid #2a2a2a;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            color: #888888;
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            color: #cccccc;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #1a1a1a;
+        }
+
+        .status-badge {
+            padding: 0.2rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #2a2a2a;
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+
+        .status-delivered {
+            background: #1a2a1a;
+            color: #4a90e2;
+            border: 1px solid #4a90e2;
+        }
+
+        .reward-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.3rem 0.8rem;
+            background: #1a1a1a;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .reward-free-lunch {
+            color: #4a90e2;
+        }
+
+        .reward-cash {
+            color: #28a745;
+        }
+
+        .reward-miracle {
+            color: #ffc107;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #1a1a1a;
+            color: #4a90e2;
+            border: 1px solid #333333;
+            text-decoration: none;
+        }
+
+        .btn-icon:hover {
+            background: #4a90e2;
+            color: white;
+            border-color: #4a90e2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #888888;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #4a90e2;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .dut-footer {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: #111111;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #2a2a2a;
+        }
+
+        .dut-footer p {
+            color: #888888;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 70px;
+            }
+            .sidebar-header h2 span, .sidebar-header p, .admin-info .name, .nav-link span {
+                display: none;
+            }
+            .main-content {
+                margin-left: 70px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .top-bar {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="admin-logo">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h2>
+                    <i class="fas fa-search"></i> 
+                    <span>Admin Portal</span>
+                </h2>
+                <p>DUT Lost & Found</p>
+                <div class="admin-badge-sidebar">Administrator</div>
+            </div>
+            
+            <div class="admin-info">
+                <div class="admin-avatar">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="name">{{ user.full_name }}</div>
+                <div class="role-badge">
+                    <i class="fas fa-crown"></i> System Admin
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/admin/dashboard" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/lost-items" class="nav-link">
+                        <i class="fas fa-archive"></i>
+                        <span>Lost Items</span>
+                        <span class="badge">{{ total_lost }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/found-items" class="nav-link">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        <span>Found Items</span>
+                        <span class="badge">{{ total_found }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/pending-claims" class="nav-link">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending Claims</span>
+                        <span class="badge" style="background: #ffc107; color: #000;">{{ pending_claims }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/reward-logs" class="nav-link active">
+                        <i class="fas fa-gift"></i>
+                        <span>Reward Logs</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/history" class="nav-link">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                        <span class="badge">{{ resolved_count }}</span>
+                    </a>
+                </li>
+                <li class="nav-item" style="margin-top: 2rem;">
+                    <a href="/logout" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1><i class="fas fa-gift"></i> Reward Selection Logs</h1>
+                    <p>Track all rewards selected by honest finders</p>
+                </div>
+                <div class="admin-badge">
+                    <i class="fas fa-shield-alt"></i> Admin Access
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{{ total_rewards }}</div>
+                    <div class="stat-label">Total Rewards</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ pending_rewards }}</div>
+                    <div class="stat-label">Pending Delivery</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ delivered_rewards }}</div>
+                    <div class="stat-label">Delivered</div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Finder</th>
+                            <th>Contact</th>
+                            <th>Item Found</th>
+                            <th>Reward Selected</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if rewards %}
+                            {% for reward in rewards %}
+                            <tr>
+                                <td>{{ reward.selected_at[:10] }}</td>
+                                <td>
+                                    <strong>{{ reward.finder_name }}</strong>
+                                </td>
+                                <td>
+                                    <i class="fas fa-envelope"></i> {{ reward.finder_email }}<br>
+                                    {% if reward.finder_phone %}
+                                    <i class="fas fa-phone"></i> {{ reward.finder_phone }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ reward.item_name }}</strong><br>
+                                    <small style="color: #888888;">Found at: {{ reward.found_location }}</small><br>
+                                    <small style="color: #888888;">Date found: {{ reward.date_found }}</small>
+                                </td>
+                                <td>
+                                    {% if 'Free Lunch' in reward.reward_type %}
+                                        <span class="reward-badge reward-free-lunch">
+                                            <i class="fas fa-utensils"></i> Free Lunch
+                                        </span>
+                                    {% elif 'Cash' in reward.reward_type %}
+                                        <span class="reward-badge reward-cash">
+                                            <i class="fas fa-money-bill-wave"></i> Cash Voucher
+                                        </span>
+                                    {% else %}
+                                        <span class="reward-badge reward-miracle">
+                                            <i class="fas fa-gift"></i> Miracle Box
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ reward.reward_value }}</td>
+                                <td>
+                                    <span class="status-badge {% if reward.status == 'pending' %}status-pending{% else %}status-delivered{% endif %}">
+                                        {{ reward.status|capitalize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if reward.status == 'pending' %}
+                                    <form method="POST" action="/admin/mark-reward-delivered/{{ reward.id }}" style="display: inline;">
+                                        <button type="submit" class="btn-icon" title="Mark as Delivered" onclick="return confirm('Mark this reward as delivered? The finder will be notified.')">
+                                            <i class="fas fa-check-circle"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span style="color: #4a90e2;">
+                                        <i class="fas fa-check-circle"></i>
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="empty-state">
+                                    <i class="fas fa-gift"></i>
+                                    <p>No reward selections yet</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dut-footer">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 1rem;">
+                    <i class="fas fa-university" style="font-size: 1.5rem; color: #4a90e2;"></i>
+                    <span style="font-weight: 600; font-size: 1rem; color: #ffffff;">DUT</span>
+                    <i class="fas fa-graduation-cap" style="font-size: 1.5rem; color: #4a90e2;"></i>
+                </div>
+                <p><i class="fas fa-copyright"></i> 2026 DUT Lost and Found · Admin Portal</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
