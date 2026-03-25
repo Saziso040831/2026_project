@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Your Reward · DUT Lost & Found</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4a90e2 0%, #4a90e2 30%, #ffffff 30%, #ffffff 100%);
+            z-index: 1000;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .reward-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .reward-header h1 {
+            color: #4a90e2;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .reward-header h1 i {
+            margin-right: 10px;
+        }
+
+        .reward-header p {
+            color: #cccccc;
+            font-size: 1rem;
+        }
+
+        .reward-header .item-name {
+            background: #1a2a3a;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            display: inline-block;
+            margin-top: 1rem;
+            color: #4a90e2;
+            border: 1px solid #4a90e2;
+        }
+
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .reward-card {
+            background: #111111;
+            border-radius: 20px;
+            border: 1px solid #2a2a2a;
+            overflow: hidden;
+            transition: 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .reward-card:hover {
+            transform: translateY(-5px);
+            border-color: #4a90e2;
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.1);
+        }
+
+        .reward-card.selected {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 2px #4a90e2;
+        }
+
+        .reward-card.selected::before {
+            content: '✓';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #4a90e2;
+            color: #fff;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .reward-icon {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #1a2a3a, #111111);
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .reward-icon i {
+            font-size: 3rem;
+            color: #4a90e2;
+        }
+
+        .reward-content {
+            padding: 1.5rem;
+        }
+
+        .reward-content h3 {
+            color: #ffffff;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .reward-content p {
+            color: #aaaaaa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .reward-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #2a2a2a;
+            background: #1a1a1a;
+        }
+
+        .reward-footer .badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            background: #1a2a3a;
+            color: #4a90e2;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid #4a90e2;
+        }
+
+        .form-actions {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3a7bc8;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            background: #2a2a2a;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #4a90e2;
+            color: #4a90e2;
+        }
+
+        .btn-outline:hover {
+            background: #1a2a3a;
+        }
+
+        .flash-messages {
+            margin-bottom: 1.5rem;
+        }
+
+        .flash-message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+        }
+
+        .flash-message.success {
+            color: #4a90e2;
+        }
+
+        .flash-message.danger {
+            color: #dc3545;
+        }
+
+        .dut-footer {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: #111111;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #2a2a2a;
+        }
+
+        .dut-footer p {
+            color: #888888;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .rewards-grid {
+                grid-template-columns: 1fr;
+            }
+            .reward-header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="reward-header">
+            <h1><i class="fas fa-gift"></i> Choose Your Reward</h1>
+            <p>Thank you for your honesty and integrity! As a token of appreciation, please choose one reward below.</p>
+            <div class="item-name">
+                <i class="fas fa-box"></i> For finding: <strong>{{ item_name }}</strong>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/select-reward/{{ claim_id }}" id="rewardForm">
+            <div class="rewards-grid">
+                {% for option in reward_options %}
+                <div class="reward-card" onclick="selectReward('{{ option.value }}')" data-value="{{ option.value }}">
+                    <div class="reward-icon">
+                        <i class="fas {{ option.icon }}"></i>
+                    </div>
+                    <div class="reward-content">
+                        <h3>{{ option.name }}</h3>
+                        <p>{{ option.description }}</p>
+                        <p style="font-size: 0.8rem; color: #4a90e2;">{{ option.details }}</p>
+                    </div>
+                    <div class="reward-footer">
+                        <span class="badge">
+                            <i class="fas fa-star"></i> Honesty Reward
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <input type="hidden" name="reward_choice" id="reward_choice" required>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                    <i class="fas fa-check-circle"></i> Confirm My Reward
+                </button>
+                <a href="/dashboard" class="btn btn-outline" style="margin-left: 1rem;">
+                    <i class="fas fa-arrow-left"></i> Maybe Later
+                </a>
+            </div>
+        </form>
+
+        <div class="dut-footer">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 1rem;">
+                <i class="fas fa-university" style="font-size: 1.5rem; color: #4a90e2;"></i>
+                <span style="font-weight: 600; font-size: 1rem; color: #ffffff;">DUT</span>
+                <i class="fas fa-graduation-cap" style="font-size: 1.5rem; color: #4a90e2;"></i>
+            </div>
+            <p><i class="fas fa-copyright"></i> 2026 DUT Lost and Found - Honesty Rewards Program</p>
+            <p style="font-size: 0.7rem;">Thank you for making our campus a better place!</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedValue = null;
+
+        function selectReward(value) {
+            selectedValue = value;
+            
+            document.querySelectorAll('.reward-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            const selectedCard = document.querySelector(`.reward-card[data-value="${value}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+            
+            document.getElementById('reward_choice').value = value;
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        document.getElementById('rewardForm').addEventListener('submit', function(e) {
+            if (!selectedValue) {
+                e.preventDefault();
+                alert('Please select a reward first');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>
