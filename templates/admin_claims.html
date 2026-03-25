@@ -448,7 +448,7 @@
 
         .claimant-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 1rem;
             margin-bottom: 1rem;
         }
@@ -610,9 +610,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/history" class="nav-link">
-                        <i class="fas fa-history"></i>
-                        <span>History</span>
+                    <a href="/admin/reward-logs" class="nav-link">
+                        <i class="fas fa-gift"></i>
+                        <span>Reward Logs</span>
                     </a>
                 </li>
                 <li class="nav-item" style="margin-top: 2rem;">
@@ -627,8 +627,8 @@
         <div class="main-content">
             <div class="top-bar">
                 <div class="page-title">
-                    <h1><i class="fas fa-clock"></i> Pending Claims</h1>
-                    <p>Compare the claimant's lost item with the found item to verify ownership</p>
+                    <h1><i class="fas fa-clock"></i> Pending Claims Review</h1>
+                    <p>Compare claimant's lost item with the found item to verify ownership</p>
                 </div>
                 <div class="admin-badge">
                     <i class="fas fa-shield-alt"></i> Admin Access
@@ -638,7 +638,7 @@
             <div class="stats-card">
                 <div>
                     <div class="stat-value">{{ pending_claims }}</div>
-                    <div class="stat-label">Pending Claims to Review</div>
+                    <div class="stat-label">Claims Waiting for Review</div>
                 </div>
                 <i class="fas fa-clock" style="font-size: 3rem; color: #ffc107;"></i>
             </div>
@@ -652,7 +652,6 @@
                             <span class="claim-date"><i class="far fa-calendar-alt"></i> {{ claim.created_at[:10] }}</span>
                         </div>
                         
-                        <!-- Comparison Section -->
                         <div class="comparison-container">
                             <!-- Claimant's Lost Item -->
                             <div class="item-card">
@@ -753,9 +752,9 @@
                                     
                                     <div class="contact-box">
                                         <div class="detail-label">Finder's Contact</div>
-                                        <div class="detail-value">{{ claim.found_owner_name }}</div>
-                                        <div class="detail-value" style="font-size: 0.8rem;">{{ claim.found_owner_email }}</div>
-                                        <div class="detail-value" style="font-size: 0.8rem;">{{ claim.found_owner_phone or 'No phone' }}</div>
+                                        <div class="detail-value">{{ claim.finder_name }}</div>
+                                        <div class="detail-value" style="font-size: 0.8rem;">{{ claim.finder_email }}</div>
+                                        <div class="detail-value" style="font-size: 0.8rem;">{{ claim.finder_phone or 'No phone' }}</div>
                                     </div>
                                 </div>
                             </div>
