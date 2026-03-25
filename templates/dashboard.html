@@ -257,6 +257,14 @@
         .notification-icon.claim_response i { color: #28a745; }
         .notification-icon.resolved i { color: #28a745; }
         .notification-icon.new_report i { color: #4a90e2; }
+        .notification-icon.reward_available i { color: #ffd700; animation: pulse 1.5s infinite; }
+        .notification-icon.reward_selected i { color: #28a745; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
 
         .notification-content {
             margin-left: 47px;
@@ -267,6 +275,22 @@
             font-size: 0.85rem;
             margin-bottom: 0.3rem;
             line-height: 1.4;
+        }
+
+        .notification-message a {
+            color: #4a90e2;
+            text-decoration: underline;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.2s;
+        }
+
+        .notification-message a:hover {
+            color: #ffd700;
+            text-decoration: none;
+            transform: translateX(3px);
         }
 
         .notification-time {
@@ -298,10 +322,6 @@
             font-size: 2rem;
             margin-bottom: 0.5rem;
             opacity: 0.5;
-        }
-
-        .empty-notifications p {
-            font-size: 0.85rem;
         }
 
         .nav-menu {
@@ -514,7 +534,6 @@
         .btn-primary {
             background: #4a90e2;
             color: white;
-            border: 1px solid #4a90e2;
         }
 
         .btn-primary:hover {
@@ -924,12 +943,18 @@
                                     <i class="fas fa-check-circle"></i>
                                 {% elif notification.type == 'new_report' %}
                                     <i class="fas fa-plus-circle"></i>
+                                {% elif notification.type == 'reward_available' %}
+                                    <i class="fas fa-gift"></i>
+                                {% elif notification.type == 'reward_selected' %}
+                                    <i class="fas fa-trophy"></i>
                                 {% else %}
                                     <i class="fas fa-info-circle"></i>
                                 {% endif %}
                             </div>
                             <div class="notification-content">
-                                <div class="notification-message">{{ notification.message }}</div>
+                                <div class="notification-message">
+                                    {{ notification.message|safe }}
+                                </div>
                                 <div class="notification-time">
                                     <i class="far fa-clock"></i> 
                                     {{ notification.created_at[:16].replace('T', ' · ') if notification.created_at else notification.created_at }}
@@ -975,6 +1000,12 @@
                         {% if match_count > 0 %}
                         <span class="badge" style="background: #4a90e2;">{{ match_count }}</span>
                         {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/my-rewards" class="nav-link">
+                        <i class="fas fa-gift"></i>
+                        <span>My Rewards</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -1219,23 +1250,7 @@
     </div>
     
     <script>
-        // Event delegation for notification clicks
-        document.addEventListener('DOMContentLoaded', function() {
-            const notificationList = document.querySelector('.notification-list');
-            if (notificationList) {
-                notificationList.addEventListener('click', function(e) {
-                    const notificationItem = e.target.closest('.notification-item');
-                    if (notificationItem) {
-                        const notificationId = notificationItem.getAttribute('data-id');
-                        if (notificationId) {
-                            markAsRead(notificationId, notificationItem);
-                        }
-                    }
-                });
-            }
-        });
-        
-        function markAsRead(notificationId, notificationElement) {
+        function markAsRead(notificationId) {
             fetch(`/mark-notification-read/${notificationId}`, {
                 method: 'POST',
                 headers: {
@@ -1245,9 +1260,12 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    notificationElement.classList.remove('unread');
-                    const badge = notificationElement.querySelector('.notification-badge');
-                    if (badge) badge.remove();
+                    const notification = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
+                    if (notification) {
+                        notification.classList.remove('unread');
+                        const badge = notification.querySelector('.notification-badge');
+                        if (badge) badge.remove();
+                    }
                     
                     const unreadBadge = document.querySelector('.messages-header .badge');
                     if (unreadBadge) {
@@ -1295,6 +1313,21 @@
             });
         }
         
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationList = document.querySelector('.notification-list');
+            if (notificationList) {
+                notificationList.addEventListener('click', function(e) {
+                    const notificationItem = e.target.closest('.notification-item');
+                    if (notificationItem) {
+                        const notificationId = notificationItem.getAttribute('data-id');
+                        if (notificationId) {
+                            markAsRead(notificationId);
+                        }
+                    }
+                });
+            }
+        });
+        
         setInterval(function() {
             fetch('/api/notifications/count')
                 .then(response => response.json())
@@ -1311,7 +1344,6 @@
                             newBadge.style.color = '#000';
                             newBadge.innerText = data.count;
                             header.appendChild(newBadge);
-                            
                             const markAllBtn = document.querySelector('.mark-all-read');
                             if (markAllBtn) markAllBtn.style.display = 'block';
                         }
