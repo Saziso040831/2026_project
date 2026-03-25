@@ -23,7 +23,6 @@
             min-height: 100vh;
         }
 
-        /* Subtle Pattern Overlay */
         body::before {
             content: '';
             position: fixed;
@@ -39,7 +38,6 @@
             z-index: 0;
         }
 
-        /* Soft Blue Accent Line */
         body::after {
             content: '';
             position: fixed;
@@ -51,7 +49,6 @@
             z-index: 1000;
         }
 
-        /* Dashboard Container */
         .dashboard-container {
             display: flex;
             min-height: 100vh;
@@ -59,7 +56,6 @@
             z-index: 1;
         }
 
-        /* Sidebar - Simplified */
         .sidebar {
             width: 280px;
             background: #111111;
@@ -114,7 +110,6 @@
             opacity: 0.7;
             margin-top: 5px;
             color: #cccccc;
-            font-weight: 400;
         }
 
         .admin-badge-sidebar {
@@ -128,7 +123,6 @@
             margin-top: 0.5rem;
         }
 
-        /* Admin Info Section */
         .admin-info {
             padding: 1.5rem;
             background: #1a1a1a;
@@ -170,7 +164,6 @@
             margin-top: 0.5rem;
         }
 
-        /* Simplified Navigation - Only 2 items */
         .nav-menu {
             list-style: none;
             padding: 0 1rem;
@@ -220,7 +213,6 @@
             color: #000;
         }
 
-        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -262,7 +254,6 @@
             font-size: 0.9rem;
         }
 
-        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -284,7 +275,6 @@
         .stat-card:hover {
             transform: translateY(-3px);
             border-color: #4a90e2;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
         }
 
         .stat-icon {
@@ -298,21 +288,10 @@
             background: #1a1a1a;
         }
 
-        .stat-icon.users {
-            color: #4a90e2;
-        }
-
-        .stat-icon.lost {
-            color: #dc3545;
-        }
-
-        .stat-icon.found {
-            color: #4a90e2;
-        }
-
-        .stat-icon.claims {
-            color: #ffc107;
-        }
+        .stat-icon.users { color: #4a90e2; }
+        .stat-icon.lost { color: #dc3545; }
+        .stat-icon.found { color: #4a90e2; }
+        .stat-icon.claims { color: #ffc107; }
 
         .stat-details h3 {
             font-size: 1.6rem;
@@ -326,7 +305,6 @@
             font-size: 0.8rem;
         }
 
-        /* Welcome Banner */
         .welcome-banner {
             background: #111111;
             border: 1px solid #2a2a2a;
@@ -365,7 +343,6 @@
             color: #cccccc;
         }
 
-        /* Section Styles */
         .section-card {
             background: #111111;
             border-radius: 15px;
@@ -410,7 +387,6 @@
             font-size: 0.85rem;
         }
 
-        /* Tables */
         .table-responsive {
             overflow-x: auto;
         }
@@ -446,28 +422,6 @@
             background: #1a1a1a;
         }
 
-        .item-image-small {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background: #1a1a1a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .item-image-small img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .item-image-small i {
-            font-size: 1.2rem;
-            color: #4a90e2;
-        }
-
         .status-badge {
             padding: 0.2rem 0.8rem;
             border-radius: 50px;
@@ -481,29 +435,9 @@
             color: #856404;
         }
 
-        .status-approved {
+        .status-delivered {
             background: #d4edda;
             color: #155724;
-        }
-
-        .status-rejected {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-available {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-claimed {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
         }
 
         .btn-icon {
@@ -528,344 +462,19 @@
             border-color: #4a90e2;
         }
 
-        .btn-icon.delete {
-            color: #dc3545;
-        }
-
-        .btn-icon.delete:hover {
-            background: #dc3545;
-            color: white;
-            border-color: #dc3545;
-        }
-
-        .btn-icon.approve:hover {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-icon.reject:hover {
-            background: #dc3545;
-            color: white;
-        }
-
-        /* Claim Review Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1001;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            align-items: center;
-            justify-content: center;
-            overflow-y: auto;
-            padding: 2rem;
-        }
-
-        .modal-content {
-            background: #111111;
-            border-radius: 20px;
-            padding: 2rem;
-            max-width: 1200px;
-            width: 98%;
-            border: 1px solid #333333;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #2a2a2a;
-        }
-
-        .modal-header h2 {
-            color: #ffffff;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .modal-header h2 i {
-            color: #4a90e2;
-        }
-
-        .close-modal {
-            background: transparent;
-            border: none;
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
             color: #888888;
-            font-size: 2rem;
-            cursor: pointer;
-            transition: 0.2s;
         }
 
-        .close-modal:hover {
-            color: #ffffff;
-        }
-
-        /* Claim Comparison View - Side by Side */
-        .claim-comparison {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .lost-item-details, .found-item-details {
-            background: #1a1a1a;
-            border-radius: 15px;
-            padding: 1.5rem;
-            border: 1px solid #333333;
-        }
-
-        .lost-item-details {
-            border-left: 4px solid #dc3545;
-        }
-
-        .found-item-details {
-            border-left: 4px solid #28a745;
-        }
-
-        .item-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 1rem;
-        }
-
-        .item-header i {
-            font-size: 1.5rem;
-        }
-
-        .item-header .lost-icon {
-            color: #dc3545;
-        }
-
-        .item-header .found-icon {
-            color: #28a745;
-        }
-
-        .item-header h3 {
-            color: #ffffff;
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .item-image-large {
-            width: 100%;
-            height: 200px;
-            background: #222222;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1rem;
-            overflow: hidden;
-            border: 1px solid #333333;
-        }
-
-        .item-image-large img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .item-image-large i {
-            font-size: 4rem;
-            color: #444444;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-
-        .info-item {
-            background: #222222;
-            padding: 0.8rem;
-            border-radius: 10px;
-        }
-
-        .info-label {
-            font-size: 0.7rem;
-            color: #888888;
-            margin-bottom: 0.3rem;
-            text-transform: uppercase;
-        }
-
-        .info-value {
-            font-size: 0.95rem;
-            color: #ffffff;
-            font-weight: 500;
-        }
-
-        .description-box {
-            background: #222222;
-            padding: 1rem;
-            border-radius: 10px;
-            margin: 1rem 0;
-        }
-
-        .description-box p {
-            color: #cccccc;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .owner-info {
-            background: #222222;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-top: 1rem;
-            border-left: 3px solid #4a90e2;
-        }
-
-        .owner-info h4 {
+        .empty-state i {
+            font-size: 3rem;
             color: #4a90e2;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .owner-info p {
-            color: #ffffff;
-            font-size: 0.9rem;
-        }
-
-        .owner-info small {
-            color: #888888;
-            display: block;
-            margin-top: 0.2rem;
-        }
-
-        /* Claimant Message Section */
-        .claimant-section {
-            background: #1a1a1a;
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-            border: 1px solid #4a90e2;
-        }
-
-        .claimant-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
             margin-bottom: 1rem;
+            opacity: 0.3;
         }
 
-        .claimant-header i {
-            color: #4a90e2;
-            font-size: 1.2rem;
-        }
-
-        .claimant-header h3 {
-            color: #ffffff;
-            font-size: 1.1rem;
-        }
-
-        .claimant-details {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            background: #222222;
-            border-radius: 10px;
-        }
-
-        .claimant-info-item {
-            color: #cccccc;
-        }
-
-        .claimant-info-item strong {
-            color: #4a90e2;
-            display: block;
-            margin-bottom: 0.2rem;
-        }
-
-        .claim-message-box {
-            background: #222222;
-            padding: 1.5rem;
-            border-radius: 10px;
-            border-left: 4px solid #4a90e2;
-            margin-top: 1rem;
-        }
-
-        .claim-message-box p {
-            color: #ffffff;
-            font-style: italic;
-            line-height: 1.6;
-            font-size: 1rem;
-        }
-
-        /* Modal Actions */
-        .modal-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #2a2a2a;
-        }
-
-        .modal-btn {
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 160px;
-            justify-content: center;
-        }
-
-        .modal-btn.approve {
-            background: #28a745;
-            color: white;
-        }
-
-        .modal-btn.approve:hover {
-            background: #218838;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
-        }
-
-        .modal-btn.reject {
-            background: #dc3545;
-            color: white;
-        }
-
-        .modal-btn.reject:hover {
-            background: #c82333;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
-        }
-
-        .modal-btn.cancel {
-            background: #333333;
-            color: #cccccc;
-        }
-
-        .modal-btn.cancel:hover {
-            background: #444444;
-        }
-
-        /* DUT Footer */
         .dut-footer {
             margin-top: 3rem;
             padding: 1.5rem;
@@ -880,45 +489,18 @@
             font-size: 0.8rem;
         }
 
-        .dut-footer i {
-            color: #4a90e2;
-        }
-
-        /* Responsive */
         @media (max-width: 1024px) {
             .sidebar {
                 width: 70px;
             }
-            
-            .sidebar-header h2 span, .sidebar-header p, .admin-info .name, .admin-info .email, .nav-link span, .admin-badge-sidebar {
+            .sidebar-header h2 span, .sidebar-header p, .admin-info .name, .nav-link span {
                 display: none;
             }
-            
-            .admin-avatar {
-                width: 40px;
-                height: 40px;
-                font-size: 1.2rem;
-            }
-            
-            .nav-link {
-                justify-content: center;
-                padding: 0.8rem;
-            }
-            
             .main-content {
                 margin-left: 70px;
             }
-            
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .claim-comparison {
-                grid-template-columns: 1fr;
-            }
-            
-            .claimant-details {
-                grid-template-columns: 1fr;
             }
         }
 
@@ -926,44 +508,21 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-            
             .top-bar {
                 flex-direction: column;
                 gap: 1rem;
                 text-align: center;
             }
-            
             .welcome-banner {
                 flex-direction: column;
                 text-align: center;
                 gap: 1rem;
-            }
-            
-            td {
-                padding: 0.8rem;
-            }
-            
-            .action-buttons {
-                flex-wrap: wrap;
-            }
-            
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .modal-actions {
-                flex-direction: column;
-            }
-            
-            .modal-btn {
-                width: 100%;
             }
         }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar - Simplified with only Pending Claims and History -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="admin-logo">
@@ -977,7 +536,6 @@
                 <div class="admin-badge-sidebar">Administrator</div>
             </div>
             
-            <!-- Admin Info -->
             <div class="admin-info">
                 <div class="admin-avatar">
                     <i class="fas fa-user-tie"></i>
@@ -988,7 +546,6 @@
                 </div>
             </div>
             
-            <!-- Simplified Navigation - Only 2 items -->
             <ul class="nav-menu">
                 <li class="nav-item">
                     <a href="/admin/dashboard" class="nav-link active">
@@ -996,27 +553,31 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
-
-                 <li class="nav-item">
-        <a href="/admin/lost-items" class="nav-link {% if request.path == '/admin/lost-items' %}active{% endif %}">
-            <i class="fas fa-archive"></i>
-            <span>Lost Items</span>
-            <span class="badge">{{ total_lost }}</span>
-        </a>
-    </li>
-    <li class="nav-item">
-        <a href="/admin/found-items" class="nav-link {% if request.path == '/admin/found-items' %}active{% endif %}">
-            <i class="fas fa-hand-holding-heart"></i>
-            <span>Found Items</span>
-            <span class="badge">{{ total_found }}</span>
-        </a>
-    </li>
-
+                <li class="nav-item">
+                    <a href="/admin/lost-items" class="nav-link">
+                        <i class="fas fa-archive"></i>
+                        <span>Lost Items</span>
+                        <span class="badge">{{ total_lost }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/found-items" class="nav-link">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        <span>Found Items</span>
+                        <span class="badge">{{ total_found }}</span>
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a href="/admin/pending-claims" class="nav-link">
                         <i class="fas fa-clock"></i>
                         <span>Pending Claims</span>
-                        <span class="badge" style="background: #ffc107; color: #000;">{{ pending_claims }}</span>
+                        <span class="badge badge-warning">{{ pending_claims }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/reward-logs" class="nav-link">
+                        <i class="fas fa-gift"></i>
+                        <span>Reward Logs</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -1035,9 +596,7 @@
             </ul>
         </div>
         
-        <!-- Main Content -->
         <div class="main-content">
-            <!-- Top Bar -->
             <div class="top-bar">
                 <div class="page-title">
                     <h1>Admin Dashboard</h1>
@@ -1048,7 +607,6 @@
                 </div>
             </div>
             
-            <!-- Welcome Banner -->
             <div class="welcome-banner">
                 <div>
                     <h2><i class="fas fa-user-shield"></i> Welcome back, {{ user.full_name }}</h2>
@@ -1062,7 +620,6 @@
                 </div>
             </div>
             
-            <!-- Stats Cards -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon users">
@@ -1073,7 +630,6 @@
                         <p>Total Users</p>
                     </div>
                 </div>
-                
                 <div class="stat-card">
                     <div class="stat-icon lost">
                         <i class="fas fa-archive"></i>
@@ -1083,7 +639,6 @@
                         <p>Lost Items</p>
                     </div>
                 </div>
-                
                 <div class="stat-card">
                     <div class="stat-icon found">
                         <i class="fas fa-hand-holding-heart"></i>
@@ -1093,7 +648,6 @@
                         <p>Found Items</p>
                     </div>
                 </div>
-                
                 <div class="stat-card">
                     <div class="stat-icon claims">
                         <i class="fas fa-file-signature"></i>
@@ -1109,17 +663,15 @@
             <div class="section-card">
                 <div class="section-header">
                     <h3><i class="fas fa-clock"></i> Pending Claims Review</h3>
-                    <span class="badge-new">{{ pending_claims }} pending</span>
+                    <a href="/admin/pending-claims" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
                 </div>
-                
-                {% if claims %}
+                {% if pending_claims > 0 %}
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Lost Item</th>
-                                <th>Found Item</th>
+                                <th>Item</th>
                                 <th>Claimant</th>
                                 <th>Date</th>
                                 <th>Status</th>
@@ -1127,61 +679,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for claim in claims %}
                             <tr>
-                                <td>#{{ claim.id }}</td>
-                                <td>
-                                    {% if claim.lost_item_name %}
-                                        <strong>{{ claim.lost_item_name }}</strong><br>
-                                        <small>Lost by: {{ claim.lost_owner_name }}</small>
-                                    {% else %}
-                                        <em>Looking for match</em>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if claim.found_item_name %}
-                                        <strong>{{ claim.found_item_name }}</strong><br>
-                                        <small>Found by: {{ claim.found_owner_name }}</small>
-                                    {% else %}
-                                        <em>Looking for match</em>
-                                    {% endif %}
-                                </td>
-                                <td>{{ claim.claimant_name }}<br><small>{{ claim.claimant_email }}</small></td>
-                                <td>{{ claim.created_at[:10] }}</td>
-                                <td>
-                                    <span class="status-badge status-pending">{{ claim.status }}</span>
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn-icon" onclick="openClaimModal(
-                                            '{{ claim.id }}',
-                                            '{{ claim.lost_item_name }}',
-                                            '{{ claim.lost_item_description }}',
-                                            '{{ claim.lost_item_location }}',
-                                            '{{ claim.lost_item_date }}',
-                                            '{{ claim.lost_item_image }}',
-                                            '{{ claim.lost_item_category }}',
-                                            '{{ claim.lost_owner_name }}',
-                                            '{{ claim.lost_owner_email }}',
-                                            '{{ claim.found_item_name }}',
-                                            '{{ claim.found_item_description }}',
-                                            '{{ claim.found_item_location }}',
-                                            '{{ claim.found_item_date }}',
-                                            '{{ claim.found_item_image }}',
-                                            '{{ claim.found_item_category }}',
-                                            '{{ claim.found_owner_name }}',
-                                            '{{ claim.found_owner_email }}',
-                                            '{{ claim.claimant_name }}',
-                                            '{{ claim.claimant_email }}',
-                                            '{{ claim.message }}',
-                                            '{{ claim.claimed_item_type }}'
-                                        )" title="Review Claim">
-                                            <i class="fas fa-balance-scale"></i>
-                                        </button>
-                                    </div>
+                                <td colspan="6" class="empty-state">
+                                    <i class="fas fa-clock"></i>
+                                    <p>Click "View All" to see pending claims</p>
                                 </td>
                             </tr>
-                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -1191,6 +694,83 @@
                     <p>No pending claims to review</p>
                 </div>
                 {% endif %}
+            </div>
+            
+            <!-- Reward Selections Section -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3><i class="fas fa-gift"></i> Recent Reward Selections</h3>
+                    <a href="/admin/reward-logs" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Finder</th>
+                                <th>Contact</th>
+                                <th>Item</th>
+                                <th>Reward Selected</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_rewards %}
+                                {% for reward in recent_rewards %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ reward.finder_name }}</strong>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-envelope"></i> {{ reward.finder_email }}<br>
+                                        {% if reward.finder_phone %}
+                                        <i class="fas fa-phone"></i> {{ reward.finder_phone }}
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ reward.item_name }}</strong></td>
+                                    <td>
+                                        <span style="color: #ffd700;">
+                                            {% if 'Free Lunch' in reward.reward_type %}
+                                                🍽️ {{ reward.reward_type }}
+                                            {% elif 'Cash' in reward.reward_type %}
+                                                💰 {{ reward.reward_type }}
+                                            {% else %}
+                                                🎁 {{ reward.reward_type }}
+                                            {% endif %}
+                                        </span>
+                                        <br>
+                                        <small>Value: {{ reward.reward_value }}</small>
+                                    </td>
+                                    <td>{{ reward.selected_at[:10] }}</td>
+                                    <td>
+                                        <span class="status-badge {% if reward.status == 'pending' %}status-pending{% else %}status-delivered{% endif %}">
+                                            {{ reward.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if reward.status == 'pending' %}
+                                        <form method="POST" action="/admin/mark-reward-delivered/{{ reward.id }}" style="display: inline;">
+                                            <button type="submit" class="btn-icon" title="Mark as Delivered" onclick="return confirm('Mark this reward as delivered? The finder will be notified.')">
+                                                <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="empty-state">
+                                        <i class="fas fa-gift"></i>
+                                        <p>No rewards selected yet</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
             <!-- Recent Activity Summary -->
@@ -1218,7 +798,6 @@
                 </div>
             </div>
             
-            <!-- DUT Footer -->
             <div class="dut-footer">
                 <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 1rem;">
                     <i class="fas fa-university" style="font-size: 1.5rem; color: #4a90e2;"></i>
@@ -1229,212 +808,5 @@
             </div>
         </div>
     </div>
-
-    <!-- Claim Review Modal -->
-    <div id="claimModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-balance-scale"></i> Claim Review</h2>
-                <button class="close-modal" onclick="closeModal()">&times;</button>
-            </div>
-            
-            <div class="claim-comparison">
-                <!-- Lost Item Details -->
-                <div class="lost-item-details" id="lostItemSection">
-                    <div class="item-header">
-                        <i class="fas fa-archive lost-icon"></i>
-                        <h3>Lost Item</h3>
-                    </div>
-                    <div class="item-image-large" id="modalLostImage">
-                        <i class="fas fa-box"></i>
-                    </div>
-                    
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Item Name</div>
-                            <div class="info-value" id="modalLostName">-</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Category</div>
-                            <div class="info-value" id="modalLostCategory">-</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Date Lost</div>
-                            <div class="info-value" id="modalLostDate">-</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Location</div>
-                            <div class="info-value" id="modalLostLocation">-</div>
-                        </div>
-                    </div>
-                    
-                    <div class="description-box">
-                        <p id="modalLostDescription">-</p>
-                    </div>
-                    
-                    <div class="owner-info">
-                        <h4><i class="fas fa-user"></i> Owner</h4>
-                        <p id="modalLostOwner">-</p>
-                        <small id="modalLostOwnerEmail">-</small>
-                    </div>
-                </div>
-                
-                <!-- Found Item Details -->
-                <div class="found-item-details" id="foundItemSection">
-                    <div class="item-header">
-                        <i class="fas fa-hand-holding-heart found-icon"></i>
-                        <h3>Found Item</h3>
-                    </div>
-                    <div class="item-image-large" id="modalFoundImage">
-                        <i class="fas fa-box"></i>
-                    </div>
-                    
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Item Name</div>
-                            <div class="info-value" id="modalFoundName">-</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Category</div>
-                            <div class="info-value" id="modalFoundCategory">-</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Date Found</div>
-                            <div class="info-value" id="modalFoundDate">-</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Location</div>
-                            <div class="info-value" id="modalFoundLocation">-</div>
-                        </div>
-                    </div>
-                    
-                    <div class="description-box">
-                        <p id="modalFoundDescription">-</p>
-                    </div>
-                    
-                    <div class="owner-info">
-                        <h4><i class="fas fa-user"></i> Finder</h4>
-                        <p id="modalFoundOwner">-</p>
-                        <small id="modalFoundOwnerEmail">-</small>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Claimant Information -->
-            <div class="claimant-section">
-                <div class="claimant-header">
-                    <i class="fas fa-user-check"></i>
-                    <h3>Claimant Information</h3>
-                </div>
-                
-                <div class="claimant-details">
-                    <div class="claimant-info-item">
-                        <strong>Name</strong>
-                        <span id="modalClaimantName">-</span>
-                    </div>
-                    <div class="claimant-info-item">
-                        <strong>Email</strong>
-                        <span id="modalClaimantEmail">-</span>
-                    </div>
-                </div>
-                
-                <div class="claim-message-box">
-                    <p id="modalClaimMessage">-</p>
-                </div>
-            </div>
-            
-            <!-- Action Buttons -->
-            <form method="POST" action="" id="claimActionForm">
-                <div class="modal-actions">
-                    <button type="submit" formaction="" class="modal-btn approve" id="approveBtn">
-                        <i class="fas fa-check"></i> Approve Claim
-                    </button>
-                    <button type="submit" formaction="" class="modal-btn reject" id="rejectBtn">
-                        <i class="fas fa-times"></i> Reject Claim
-                    </button>
-                    <button type="button" class="modal-btn cancel" onclick="closeModal()">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        function openClaimModal(
-            claimId,
-            lostName, lostDesc, lostLoc, lostDate, lostImage, lostCategory, lostOwner, lostOwnerEmail,
-            foundName, foundDesc, foundLoc, foundDate, foundImage, foundCategory, foundOwner, foundOwnerEmail,
-            claimantName, claimantEmail, claimMessage, claimedType
-        ) {
-            // Set lost item details (if available)
-            if (lostName && lostName !== 'None') {
-                document.getElementById('modalLostName').textContent = lostName;
-                document.getElementById('modalLostDescription').textContent = lostDesc || 'No description provided';
-                document.getElementById('modalLostLocation').textContent = lostLoc || '-';
-                document.getElementById('modalLostDate').textContent = lostDate || '-';
-                document.getElementById('modalLostCategory').textContent = lostCategory || '-';
-                document.getElementById('modalLostOwner').textContent = lostOwner || '-';
-                document.getElementById('modalLostOwnerEmail').textContent = lostOwnerEmail || '-';
-                
-                // Set lost item image
-                const lostImageDiv = document.getElementById('modalLostImage');
-                if (lostImage && lostImage !== 'None') {
-                    lostImageDiv.innerHTML = `<img src="/static/${lostImage}" alt="Lost item">`;
-                } else {
-                    lostImageDiv.innerHTML = '<i class="fas fa-box"></i>';
-                }
-                document.getElementById('lostItemSection').style.display = 'block';
-            } else {
-                document.getElementById('lostItemSection').style.display = 'none';
-            }
-            
-            // Set found item details (if available)
-            if (foundName && foundName !== 'None') {
-                document.getElementById('modalFoundName').textContent = foundName;
-                document.getElementById('modalFoundDescription').textContent = foundDesc || 'No description provided';
-                document.getElementById('modalFoundLocation').textContent = foundLoc || '-';
-                document.getElementById('modalFoundDate').textContent = foundDate || '-';
-                document.getElementById('modalFoundCategory').textContent = foundCategory || '-';
-                document.getElementById('modalFoundOwner').textContent = foundOwner || '-';
-                document.getElementById('modalFoundOwnerEmail').textContent = foundOwnerEmail || '-';
-                
-                // Set found item image
-                const foundImageDiv = document.getElementById('modalFoundImage');
-                if (foundImage && foundImage !== 'None') {
-                    foundImageDiv.innerHTML = `<img src="/static/${foundImage}" alt="Found item">`;
-                } else {
-                    foundImageDiv.innerHTML = '<i class="fas fa-box"></i>';
-                }
-                document.getElementById('foundItemSection').style.display = 'block';
-            } else {
-                document.getElementById('foundItemSection').style.display = 'none';
-            }
-            
-            // Set claimant details
-            document.getElementById('modalClaimantName').textContent = claimantName || '-';
-            document.getElementById('modalClaimantEmail').textContent = claimantEmail || '-';
-            document.getElementById('modalClaimMessage').textContent = claimMessage || 'No message provided';
-            
-            // Set form actions
-            document.getElementById('approveBtn').formAction = `/admin/claim/${claimId}/approve`;
-            document.getElementById('rejectBtn').formAction = `/admin/claim/${claimId}/reject`;
-            
-            // Show modal
-            document.getElementById('claimModal').style.display = 'flex';
-        }
-        
-        function closeModal() {
-            document.getElementById('claimModal').style.display = 'none';
-        }
-        
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('claimModal');
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
-        }
-    </script>
 </body>
 </html>
