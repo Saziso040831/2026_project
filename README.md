@@ -10,6 +10,7 @@ The Lost and Found Management System is a web-based application developed to hel
 - To provide a searchable database of items
 - To improve recovery of lost belongings
 - To create a user-friendly web interface
+- Organize lost items into categories 
 
 ---
 
