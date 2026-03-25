@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Rewards · DUT Lost & Found</title>
+    <title>Register · DUT Lost & Found</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,266 +17,811 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: #0a0a0a;
             min-height: 100vh;
-        }
-
-        .navbar {
-            background: #111111;
-            padding: 1rem 2rem;
-            border-bottom: 1px solid #2a2a2a;
+            background: #0a0a0a;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: center;
+            padding: 1.2rem;
+            position: relative;
         }
 
-        .logo {
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 1;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4a90e2 0%, #4a90e2 30%, #ffffff 30%, #ffffff 100%);
+            z-index: 3;
+        }
+
+        .register-card {
+            background: #111111;
+            width: 950px;
+            max-width: 100%;
+            border-radius: 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transition: transform 0.2s ease;
+            z-index: 2;
+            border: 1px solid #2a2a2a;
+            position: relative;
+            display: flex;
+        }
+
+        .register-card:hover {
+            transform: scale(1.01);
+        }
+
+        .brand-side {
+            width: 40%;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1.5rem;
+            position: relative;
+            text-align: center;
+            color: white;
+            border-right: 1px solid #2a2a2a;
+        }
+
+        .dut-icon-large {
+            width: 90px;
+            height: 90px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            border: 2px solid #4a90e2;
+        }
+
+        .dut-icon-large i {
+            font-size: 3rem;
+            color: #4a90e2;
+        }
+
+        .brand-side h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .brand-side h2 span {
+            color: #4a90e2;
+        }
+
+        .brand-tagline {
+            color: #888888;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            letter-spacing: 1px;
+        }
+
+        .brand-features {
+            text-align: left;
+            margin: 2rem 0;
+            width: 100%;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+            color: #cccccc;
+            font-size: 0.85rem;
+        }
+
+        .feature-item i {
+            color: #4a90e2;
+            width: 24px;
+        }
+
+        .brand-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .brand-stat {
+            text-align: center;
+        }
+
+        .brand-stat .number {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #4a90e2;
+        }
+
+        .brand-stat .label {
+            font-size: 0.65rem;
+            color: #888888;
+        }
+
+        .form-side {
+            width: 60%;
+            padding: 2rem;
+            background: #111111;
+            position: relative;
+            z-index: 2;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-side::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .form-side::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .form-side::-webkit-scrollbar-thumb {
+            background: #4a90e2;
+            border-radius: 3px;
+        }
+
+        .form-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.2rem;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .logo i {
+        .form-header h2 i {
+            color: #4a90e2;
             font-size: 1.8rem;
-            color: #ffd700;
         }
 
-        .logo span {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #ffffff;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .nav-link {
-            text-decoration: none;
-            color: #cccccc;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            transition: 0.2s;
-        }
-
-        .nav-link:hover {
-            background: #1a1a1a;
-            color: #ffd700;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-
-        .page-header {
-            margin-bottom: 2rem;
-        }
-
-        .page-header h1 {
-            color: #ffd700;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .page-header h1 i {
-            margin-right: 10px;
-        }
-
-        .page-header p {
+        .form-sub {
             color: #888888;
+            margin-bottom: 1rem;
+            font-weight: 400;
+            font-size: 0.85rem;
+            border-left: 3px solid #4a90e2;
+            padding-left: 12px;
         }
 
-        .rewards-list {
-            display: grid;
-            gap: 1rem;
+        .flash-messages {
+            margin-bottom: 1rem;
         }
 
-        .reward-card {
-            background: #111111;
-            border-radius: 15px;
-            border: 1px solid #2a2a2a;
-            overflow: hidden;
-            transition: 0.2s;
-        }
-
-        .reward-card:hover {
-            border-color: #ffd700;
-        }
-
-        .reward-header {
-            padding: 1rem 1.5rem;
-            background: linear-gradient(135deg, #1a2a3a, #111111);
-            border-bottom: 1px solid #2a2a2a;
+        .flash-message {
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 8px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
         }
 
-        .reward-date {
-            color: #888888;
+        .flash-message.success {
+            color: #4a90e2;
+        }
+
+        .flash-message.danger {
+            color: #dc3545;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .input-group.full-width {
+            grid-column: span 2;
+        }
+
+        .input-group label {
             font-size: 0.8rem;
+            font-weight: 500;
+            color: #cccccc;
+            display: block;
+            margin-bottom: 5px;
+            margin-left: 5px;
         }
 
-        .reward-badge {
-            padding: 0.2rem 0.8rem;
-            border-radius: 50px;
+        .input-group label i {
+            color: #4a90e2;
+            width: 20px;
+            font-size: 0.85rem;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #1a1a1a;
+            border-radius: 30px;
+            padding: 0 15px;
+            border: 1.5px solid #333333;
+            transition: all 0.2s;
+        }
+
+        .input-wrapper:hover {
+            background: #222222;
+            border-color: #4a90e2;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #4a90e2;
+            background: #222222;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .input-wrapper i {
+            color: #4a90e2;
+            font-size: 0.9rem;
+            width: 24px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 12px 0;
+            font-size: 0.9rem;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            outline: none;
+        }
+
+        .input-wrapper input::placeholder {
+            color: #555555;
+            font-size: 0.85rem;
+        }
+
+        .help-text {
+            font-size: 0.7rem;
+            color: #666666;
+            margin-top: 4px;
+            margin-left: 12px;
+        }
+
+        .password-strength {
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .strength-meter {
+            flex: 1;
+            height: 4px;
+            background: #2a2a2a;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 2px;
+        }
+
+        .strength-text {
+            font-size: 0.7rem;
+            color: #888888;
+        }
+
+        .validation-message {
+            font-size: 0.7rem;
+            margin-top: 4px;
+            margin-left: 12px;
+        }
+
+        .validation-message.error {
+            color: #dc3545;
+        }
+
+        .validation-message.success {
+            color: #4a90e2;
+        }
+
+        .input-wrapper.valid {
+            border-color: #4a90e2;
+        }
+
+        .input-wrapper.invalid {
+            border-color: #dc3545;
+        }
+
+        .terms-section {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #1a1a1a;
+            border-radius: 15px;
+            border: 1px solid #333333;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+
+        .terms-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            accent-color: #4a90e2;
+            cursor: pointer;
+        }
+
+        .terms-checkbox label {
+            color: #cccccc;
+            font-size: 0.85rem;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+
+        .terms-checkbox label a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+
+        .terms-checkbox label a:hover {
+            text-decoration: underline;
+        }
+
+        .terms-preview {
+            background: #222222;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .terms-preview h4 {
+            color: #4a90e2;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terms-preview p {
+            color: #aaaaaa;
             font-size: 0.75rem;
+            line-height: 1.5;
+            margin-bottom: 0.8rem;
+        }
+
+        .terms-preview ul {
+            padding-left: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .terms-preview li {
+            color: #aaaaaa;
+            font-size: 0.75rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .register-btn {
+            background: #4a90e2;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 0.8rem 1.5rem;
+            width: 100%;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Poppins', sans-serif;
+            margin: 1rem 0;
+        }
+
+        .register-btn:hover {
+            background: #3a7bc8;
+            transform: translateY(-2px);
+        }
+
+        .register-btn:disabled {
+            background: #555555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-prompt {
+            text-align: center;
+            padding-top: 1rem;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .login-prompt p {
+            color: #888888;
+            font-size: 0.85rem;
+        }
+
+        .login-prompt a {
+            color: #4a90e2;
+            text-decoration: none;
             font-weight: 500;
         }
 
-        .reward-badge.pending {
-            background: #ffc10720;
-            color: #ffc107;
-            border: 1px solid #ffc107;
-        }
-
-        .reward-badge.selected {
-            background: #28a74520;
-            color: #28a745;
-            border: 1px solid #28a745;
-        }
-
-        .reward-content {
-            padding: 1.5rem;
-        }
-
-        .reward-item {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #ffd700;
-            margin-bottom: 0.5rem;
-        }
-
-        .reward-details {
-            color: #cccccc;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-
-        .reward-message {
-            background: #1a1a1a;
-            padding: 0.8rem;
-            border-radius: 10px;
-            margin-top: 1rem;
-            border-left: 3px solid #ffd700;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            background: #111111;
-            border-radius: 15px;
-            border: 1px dashed #ffd700;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            color: #ffd700;
-            margin-bottom: 1rem;
-            opacity: 0.5;
+        .login-prompt a:hover {
+            text-decoration: underline;
         }
 
         .dut-footer {
-            margin-top: 3rem;
-            padding: 1.5rem;
-            background: #111111;
-            border-radius: 15px;
+            margin-top: 1rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid #2a2a2a;
             text-align: center;
-            border: 1px solid #2a2a2a;
+            font-size: 0.65rem;
+            color: #666666;
         }
 
         @media (max-width: 768px) {
-            .navbar {
+            .register-card {
                 flex-direction: column;
-                gap: 1rem;
             }
-            .reward-header {
-                flex-direction: column;
-                gap: 0.5rem;
-                text-align: center;
+            .brand-side, .form-side {
+                width: 100%;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .input-group.full-width {
+                grid-column: span 1;
+            }
+            .brand-side {
+                padding: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="logo">
-            <i class="fas fa-gift"></i>
-            <span>DUT Lost & Found</span>
-        </div>
-        <div class="nav-links">
-            <a href="/dashboard" class="nav-link">Dashboard</a>
-            <a href="/my-rewards" class="nav-link active">My Rewards</a>
-            <a href="/logout" class="nav-link">Logout</a>
-        </div>
-    </nav>
+    <div class="register-card">
+        <div class="brand-side">
+            <div class="dut-icon-large">
+                <i class="fas fa-university"></i>
+            </div>
+            <h2>DUT <span>|</span> Lost & Found</h2>
+            <div class="brand-tagline">DURBAN UNIVERSITY OF TECHNOLOGY</div>
+            
+            <div class="brand-features">
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Report lost or found items</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-handshake"></i>
+                    <span>Get matched with potential items</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-bell"></i>
+                    <span>Receive instant notifications</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Secure student-only access</span>
+                </div>
+            </div>
 
-    <div class="container">
-        <div class="page-header">
-            <h1><i class="fas fa-gift"></i> My Honesty Rewards</h1>
-            <p>Thank you for being honest! Here are the rewards you've earned for returning lost items.</p>
+            <div class="brand-stats">
+                <div class="brand-stat">
+                    <div class="number">500+</div>
+                    <div class="label">ITEMS FOUND</div>
+                </div>
+                <div class="brand-stat">
+                    <div class="number">95%</div>
+                    <div class="label">RECOVERY RATE</div>
+                </div>
+                <div class="brand-stat">
+                    <div class="number">1K+</div>
+                    <div class="label">USERS</div>
+                </div>
+            </div>
         </div>
 
-        <div class="rewards-list">
-            {% if rewards %}
-                {% for reward in rewards %}
-                <div class="reward-card">
-                    <div class="reward-header">
-                        <span class="reward-date">
-                            <i class="far fa-calendar-alt"></i> {{ reward.created_at[:10] }}
-                        </span>
-                        <span class="reward-badge {{ reward.status }}">
-                            {% if reward.status == 'pending' %}
-                                ⏳ Pending Selection
-                            {% else %}
-                                ✓ Selected
-                            {% endif %}
-                        </span>
+        <div class="form-side">
+            <div class="form-header">
+                <h2>
+                    <i class="fas fa-user-plus"></i> Create Account
+                </h2>
+                <div class="form-sub">
+                    <i class="fas fa-graduation-cap"></i> Join the DUT community
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
                     </div>
-                    <div class="reward-content">
-                        <div class="reward-item">
-                            <i class="fas fa-box"></i> {{ reward.item_name }}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="/register" id="registerForm">
+                <div class="form-grid">
+                    <div class="input-group full-width">
+                        <label for="full_name"><i class="fas fa-user"></i> Full Name *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="full_name" name="full_name" placeholder="Enter your full name" required>
                         </div>
-                        <div class="reward-details">
-                            {% if reward.status == 'pending' %}
-                                <p><i class="fas fa-clock"></i> You have a reward waiting! Check your notifications to select it.</p>
-                            {% else %}
-                                <p><i class="fas fa-trophy"></i> <strong>Selected Reward:</strong> {{ reward.reward_selected_text or reward.reward_selected }}</p>
-                                <p><i class="fas fa-check-circle"></i> Reward has been recorded. Admin will contact you soon.</p>
-                            {% endif %}
+                    </div>
+
+                    <div class="input-group full-width">
+                        <label for="email"><i class="fas fa-envelope"></i> DUT4Life Email *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" name="email" placeholder="studentnumber@dut4life.ac.za" required>
                         </div>
-                        {% if reward.status == 'pending' %}
-                        <div class="reward-message">
-                            <i class="fas fa-bell"></i> 
-                            <strong>Action Required!</strong> You have a pending reward. Please check your notifications to select your reward.
+                        <div class="help-text">
+                            <i class="fas fa-info-circle"></i> Must be your official DUT email (e.g., 22278444@dut4life.ac.za)
                         </div>
-                        {% endif %}
+                    </div>
+
+                    <div class="input-group">
+                        <label for="phone"><i class="fas fa-phone"></i> Phone Number</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="phone" name="phone" placeholder="e.g., 0712345678">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password"><i class="fas fa-lock"></i> Password *</label>
+                        <div class="input-wrapper" id="password-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" name="password" placeholder="$$DutYYMMDD (e.g., $$Dut040831)" required>
+                        </div>
+                        <div class="password-strength" id="password-strength">
+                            <div class="strength-meter">
+                                <div class="strength-fill" id="strengthFill"></div>
+                            </div>
+                            <span class="strength-text" id="strengthText">Enter password</span>
+                        </div>
+                        <div class="validation-message" id="password-validation"></div>
+                        <div class="help-text">
+                            <i class="fas fa-info-circle"></i> Format: $$Dut + 6 digits (YYMMDD). Example: $$Dut040831
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="confirm_password"><i class="fas fa-check-circle"></i> Confirm Password *</label>
+                        <div class="input-wrapper" id="confirm-wrapper">
+                            <i class="fas fa-check-circle"></i>
+                            <input type="password" id="confirm_password" name="confirm_password" placeholder="Repeat your password" required>
+                        </div>
+                        <div class="validation-message" id="confirm-validation"></div>
                     </div>
                 </div>
-                {% endfor %}
-            {% else %}
-            <div class="empty-state">
-                <i class="fas fa-gift"></i>
-                <h3>No Rewards Yet</h3>
-                <p>You haven't earned any rewards yet. Return a lost item to earn honesty rewards!</p>
-                <a href="/all-found" class="btn" style="background: #ffd700; color: #000; padding: 0.5rem 1rem; border-radius: 50px; text-decoration: none; display: inline-block; margin-top: 1rem;">
-                    <i class="fas fa-search"></i> Browse Found Items
-                </a>
-            </div>
-            {% endif %}
-        </div>
 
-        <div class="dut-footer">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 1rem;">
-                <i class="fas fa-university" style="font-size: 1.5rem; color: #ffd700;"></i>
-                <span style="font-weight: 600; font-size: 1rem; color: #ffffff;">DUT</span>
-                <i class="fas fa-graduation-cap" style="font-size: 1.5rem; color: #ffd700;"></i>
+                <div class="terms-section">
+                    <div class="terms-checkbox">
+                        <input type="checkbox" id="terms_checkbox" name="terms_agreed" required>
+                        <label for="terms_checkbox">
+                            I agree to the <a href="#" onclick="alert('Terms and Conditions will be shown here'); return false;">Terms and Conditions</a> and 
+                            <a href="#" onclick="alert('Privacy Policy will be shown here'); return false;">Privacy Policy</a>
+                        </label>
+                    </div>
+                    
+                    <div class="terms-preview">
+                        <h4><i class="fas fa-file-contract"></i> Terms & Conditions Summary</h4>
+                        <p>By registering for DUT Lost & Found, you agree to:</p>
+                        <ul>
+                            <li>Provide accurate and truthful information about lost/found items</li>
+                            <li>Use the platform responsibly and honestly when claiming items</li>
+                            <li>Respect other users' privacy and property</li>
+                            <li>Report any false claims or suspicious activity to administrators</li>
+                            <li>Accept that false claims may result in disciplinary action</li>
+                            <li>Keep your login credentials secure and confidential</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <button type="submit" class="register-btn" id="registerBtn" disabled>
+                    <i class="fas fa-paper-plane"></i> Create Account
+                </button>
+            </form>
+
+            <div class="login-prompt">
+                <p>Already have an account? <a href="/login">Login here</a></p>
             </div>
-            <p><i class="fas fa-copyright"></i> 2026 DUT Lost and Found - Honesty Rewards Program</p>
+
+            <div class="dut-footer">
+                <i class="fas fa-copyright"></i> 2026 Durban University of Technology · DUT4Life
+            </div>
         </div>
     </div>
+
+    <script>
+        // Simple password format validation - only checks format $$Dut + 6 digits
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const strengthFill = document.getElementById('strengthFill');
+            const strengthText = document.getElementById('strengthText');
+            const passwordWrapper = document.getElementById('password-wrapper');
+            const passwordValidation = document.getElementById('password-validation');
+            
+            // Check format: starts with $$Dut followed by exactly 6 digits
+            const formatPattern = /^\$\$Dut\d{6}$/;
+            
+            if (!password) {
+                strengthFill.style.width = '0%';
+                strengthText.textContent = 'Enter password';
+                passwordWrapper.classList.remove('valid', 'invalid');
+                if (passwordValidation) passwordValidation.innerHTML = '';
+                return false;
+            }
+            
+            if (!formatPattern.test(password)) {
+                strengthFill.style.width = '100%';
+                strengthFill.style.backgroundColor = '#dc3545';
+                strengthText.textContent = 'Invalid format. Use $$DutYYMMDD';
+                passwordWrapper.classList.add('invalid');
+                passwordWrapper.classList.remove('valid');
+                if (passwordValidation) {
+                    passwordValidation.className = 'validation-message error';
+                    passwordValidation.innerHTML = 'Must be $$Dut followed by 6 digits';
+                }
+                return false;
+            }
+            
+            // Valid password format
+            strengthFill.style.width = '100%';
+            strengthFill.style.backgroundColor = '#28a745';
+            strengthText.textContent = '✓ Valid password format';
+            passwordWrapper.classList.add('valid');
+            passwordWrapper.classList.remove('invalid');
+            if (passwordValidation) {
+                passwordValidation.className = 'validation-message success';
+                passwordValidation.innerHTML = '✓ Password format is valid';
+            }
+            return true;
+        }
+        
+        // Password confirmation
+        function validateConfirmPassword() {
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            const confirmWrapper = document.getElementById('confirm-wrapper');
+            const confirmValidation = document.getElementById('confirm-validation');
+            
+            if (!confirm) {
+                confirmWrapper.classList.remove('valid', 'invalid');
+                if (confirmValidation) confirmValidation.innerHTML = '';
+                return;
+            }
+            
+            if (password === confirm) {
+                confirmWrapper.classList.add('valid');
+                confirmWrapper.classList.remove('invalid');
+                if (confirmValidation) {
+                    confirmValidation.className = 'validation-message success';
+                    confirmValidation.innerHTML = '✓ Passwords match';
+                }
+            } else {
+                confirmWrapper.classList.add('invalid');
+                confirmWrapper.classList.remove('valid');
+                if (confirmValidation) {
+                    confirmValidation.className = 'validation-message error';
+                    confirmValidation.innerHTML = '✗ Passwords do not match';
+                }
+            }
+        }
+        
+        // Update button state
+        function updateRegisterButton() {
+            const checkbox = document.getElementById('terms_checkbox');
+            const passwordValid = validatePassword();
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            const confirmValid = password === confirm && confirm !== '';
+            const registerBtn = document.getElementById('registerBtn');
+            
+            registerBtn.disabled = !(checkbox.checked && passwordValid && confirmValid);
+        }
+        
+        // Event listeners
+        document.getElementById('password').addEventListener('input', function() {
+            validatePassword();
+            validateConfirmPassword();
+            updateRegisterButton();
+        });
+        
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            validateConfirmPassword();
+            updateRegisterButton();
+        });
+        
+        document.getElementById('terms_checkbox').addEventListener('change', function() {
+            updateRegisterButton();
+        });
+        
+        // Form submit
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const passwordValid = validatePassword();
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            
+            if (!passwordValid) {
+                e.preventDefault();
+                alert('Password must be in format: $$Dut followed by 6 digits');
+                return false;
+            }
+            
+            if (password !== confirm) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                return false;
+            }
+            
+            if (!document.getElementById('terms_checkbox').checked) {
+                e.preventDefault();
+                alert('You must agree to the Terms and Conditions to register.');
+                return false;
+            }
+            
+            const email = document.getElementById('email').value;
+            const emailPattern = /^\d{8}@dut4life\.ac\.za$/;
+            if (!emailPattern.test(email)) {
+                e.preventDefault();
+                alert('Please use your DUT4Life email (studentnumber@dut4life.ac.za)');
+                return false;
+            }
+        });
+        
+        // Initialize
+        validatePassword();
+        updateRegisterButton();
+    </script>
 </body>
 </html>
