@@ -25,9 +25,11 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = 'bayandasaziso6@gmail.com'
 app.config['MAIL_PASSWORD'] = 'deqruzucediihuzf'
 app.config['MAIL_DEFAULT_SENDER'] = 'bayandasaziso6@gmail.com'
+app.config['MAIL_DEBUG'] = True
 
 mail = Mail(app)
 
@@ -124,12 +126,11 @@ def init_db():
                   FOREIGN KEY (claimant_id) REFERENCES users(id),
                   FOREIGN KEY (reviewed_by) REFERENCES users(id))''')
     
-    # Notifications table - Check if reference_id exists, if not add it
+    # Notifications table
     c.execute("PRAGMA table_info(notifications)")
     columns = [col[1] for col in c.fetchall()]
     
     if not columns:
-        # Create new table
         c.execute('''CREATE TABLE IF NOT EXISTS notifications
                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
                       user_id INTEGER NOT NULL,
@@ -139,14 +140,28 @@ def init_db():
                       is_read BOOLEAN DEFAULT 0,
                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                       FOREIGN KEY (user_id) REFERENCES users(id))''')
-        print("Notifications table created with reference_id")
+        print("Notifications table created")
     elif 'reference_id' not in columns:
-        # Add missing column
         try:
             c.execute("ALTER TABLE notifications ADD COLUMN reference_id INTEGER")
             print("Added reference_id column to notifications table")
         except Exception as e:
             print(f"Error adding column: {e}")
+
+    # Admin Reward Log table
+    c.execute('''CREATE TABLE IF NOT EXISTS admin_reward_log
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  claim_id INTEGER NOT NULL,
+                  finder_id INTEGER NOT NULL,
+                  finder_name TEXT NOT NULL,
+                  item_name TEXT NOT NULL,
+                  reward_type TEXT NOT NULL,
+                  reward_value TEXT NOT NULL,
+                  selected_at TIMESTAMP NOT NULL,
+                  status TEXT DEFAULT 'pending',
+                  delivered_at TIMESTAMP,
+                  FOREIGN KEY (claim_id) REFERENCES claims(id),
+                  FOREIGN KEY (finder_id) REFERENCES users(id))''')
     
     # History table
     c.execute('''CREATE TABLE IF NOT EXISTS item_history
@@ -166,11 +181,31 @@ def init_db():
                   FOREIGN KEY (claimed_by_id) REFERENCES users(id),
                   FOREIGN KEY (resolved_by) REFERENCES users(id))''')
     
-    # Password reset tokens table
+    # Finder Rewards table
+    c.execute('''CREATE TABLE IF NOT EXISTS finder_rewards
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  claim_id INTEGER NOT NULL,
+                  user_id INTEGER NOT NULL,
+                  item_name TEXT NOT NULL,
+                  reward_type TEXT,
+                  reward_selected TEXT,
+                  status TEXT DEFAULT 'pending',
+                  selected_at TIMESTAMP,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  FOREIGN KEY (claim_id) REFERENCES claims(id),
+                  FOREIGN KEY (user_id) REFERENCES users(id))''')
+    
+    c.execute("PRAGMA table_info(found_items)")
+    columns = [col[1] for col in c.fetchall()]
+    if 'reward_offered' not in columns:
+        c.execute("ALTER TABLE found_items ADD COLUMN reward_offered BOOLEAN DEFAULT 0")
+    
+    # Password reset table - UPDATED with correct schema
     c.execute('''CREATE TABLE IF NOT EXISTS password_resets
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   user_id INTEGER NOT NULL,
-                  token TEXT UNIQUE NOT NULL,
+                  email TEXT NOT NULL,
+                  reset_code TEXT NOT NULL,
                   expires_at TIMESTAMP NOT NULL,
                   used BOOLEAN DEFAULT 0,
                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -323,30 +358,341 @@ Please contact them to arrange return.
         print(f"Error: {e}")
         return False
 
-def send_password_reset_email(email, name, token):
-    reset_link = url_for('reset_password', token=token, _external=True)
-    subject = "Password Reset Request - DUT Lost & Found"
+def send_claim_rejected_email(claimant, item, claim_message):
+    """Send rejection email to claimant when claim is rejected"""
+    subject = "Claim Status Update - DUT Lost & Found"
+    
+    # HTML email content
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{
+                font-family: 'Arial', sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 20px auto;
+                background: #ffffff;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }}
+            .header {{
+                background: linear-gradient(135deg, #dc3545, #b02a37);
+                color: white;
+                padding: 30px;
+                text-align: center;
+            }}
+            .header h1 {{
+                margin: 0;
+                font-size: 24px;
+            }}
+            .content {{
+                padding: 30px;
+            }}
+            .item-details {{
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 20px 0;
+                border-left: 4px solid #dc3545;
+            }}
+            .reason-box {{
+                background: #fff3cd;
+                border-left: 4px solid #ffc107;
+                padding: 15px;
+                margin: 20px 0;
+                border-radius: 5px;
+            }}
+            .footer {{
+                background: #f4f4f4;
+                padding: 20px;
+                text-align: center;
+                color: #666;
+                font-size: 12px;
+            }}
+            .button {{
+                display: inline-block;
+                background: #4a90e2;
+                color: white;
+                padding: 12px 30px;
+                text-decoration: none;
+                border-radius: 5px;
+                margin: 10px 0;
+                font-weight: bold;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>📋 Claim Update</h1>
+                <p>DUT Lost & Found System</p>
+            </div>
+            <div class="content">
+                <p>Dear <strong>{claimant['full_name']}</strong>,</p>
+                
+                <p>We have reviewed your claim for the following item:</p>
+                
+                <div class="item-details">
+                    <p><strong>Item Name:</strong> {item['item_name']}</p>
+                    <p><strong>Category:</strong> {item['category']}</p>
+                    <p><strong>Location:</strong> {item['location']}</p>
+                    <p><strong>Date Reported:</strong> {item.get('date_found', item.get('date_lost', 'N/A'))}</p>
+                </div>
+                
+                <div class="reason-box">
+                    <p><strong>⚠️ Claim Status: Rejected</strong></p>
+                    <p>After careful review, your claim has been rejected because the information provided did not match the item details sufficiently.</p>
+                    <p><strong>Your provided reason:</strong><br>
+                    <em>"{claim_message[:200]}{'...' if claim_message|length > 200 else ''}"</em></p>
+                </div>
+                
+                <p><strong>Why was my claim rejected?</strong></p>
+                <ul style="margin-left: 20px; color: #666;">
+                    <li>The description of the item you provided did not match the reported item</li>
+                    <li>Insufficient proof of ownership was provided</li>
+                    <li>The location or date did not align with the reported loss/find</li>
+                    <li>Another claim with better evidence was approved</li>
+                </ul>
+                
+                <p><strong>What can I do?</strong></p>
+                <ul style="margin-left: 20px; color: #666;">
+                    <li>If you still believe this is your item, you can submit a new claim with more detailed information</li>
+                    <li>Provide specific details about unique features, marks, or identifiers</li>
+                    <li>Include the exact date and location where you lost the item</li>
+                    <li>If available, provide proof of purchase or photos</li>
+                </ul>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="{url_for('dashboard', _external=True)}" class="button">Go to Dashboard</a>
+                </div>
+                
+                <p style="margin-top: 20px; font-size: 12px; color: #666;">
+                    If you have any questions, please contact the DUT Lost & Found support team.
+                </p>
+            </div>
+            <div class="footer">
+                <p>© 2026 Durban University of Technology</p>
+                <p>DUT Lost & Found - Helping students reunite with lost items</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    # Plain text version as backup
+    text_content = f"""
+    DUT Lost & Found - Claim Status Update
+    
+    Dear {claimant['full_name']},
+    
+    We have reviewed your claim for the item: {item['item_name']}.
+    
+    Status: REJECTED
+    
+    Reason: The information provided did not match the item details sufficiently.
+    
+    Your provided reason: "{claim_message[:200]}"
+    
+    Why was my claim rejected?
+    - The description of the item you provided did not match the reported item
+    - Insufficient proof of ownership was provided
+    - The location or date did not align with the reported loss/find
+    - Another claim with better evidence was approved
+    
+    What can I do?
+    - If you still believe this is your item, you can submit a new claim with more detailed information
+    - Provide specific details about unique features, marks, or identifiers
+    - Include the exact date and location where you lost the item
+    - If available, provide proof of purchase or photos
+    
+    For more information, please visit your dashboard: {url_for('dashboard', _external=True)}
+    
+    © 2026 Durban University of Technology
+    """
     
     try:
-        msg = Message(subject=subject, recipients=[email])
-        msg.body = f"""
-Dear {name},
-
-We received a request to reset your password.
-
-Click this link to reset your password:
-{reset_link}
-
-This link will expire in 24 hours.
-If you didn't request this, please ignore this email.
-
-© 2026 Durban University of Technology
-        """
+        msg = Message(
+            subject=subject,
+            recipients=[claimant['email']],
+            html=html_content,
+            body=text_content
+        )
         mail.send(msg)
-        print(f"Password reset email sent to: {email}")
+        print(f"✅ Rejection email sent to: {claimant['email']}")
         return True
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"❌ Error sending rejection email: {e}")
+        traceback.print_exc()
+        return False
+
+def send_password_reset_email(email, name, reset_code):
+    """Send password reset email with 6-digit code"""
+    subject = "Password Reset Code - DUT Lost & Found"
+    
+    # HTML email content
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{
+                font-family: 'Arial', sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 20px auto;
+                background: #ffffff;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }}
+            .header {{
+                background: linear-gradient(135deg, #4a90e2, #1b5a7e);
+                color: white;
+                padding: 30px;
+                text-align: center;
+            }}
+            .header h1 {{
+                margin: 0;
+                font-size: 24px;
+            }}
+            .content {{
+                padding: 30px;
+            }}
+            .code-box {{
+                background: #f0f0f0;
+                padding: 20px;
+                text-align: center;
+                margin: 20px 0;
+                border-radius: 10px;
+                border: 2px dashed #4a90e2;
+            }}
+            .reset-code {{
+                font-size: 32px;
+                font-weight: bold;
+                letter-spacing: 5px;
+                color: #4a90e2;
+                font-family: monospace;
+            }}
+            .warning {{
+                background: #fff3cd;
+                border-left: 4px solid #ffc107;
+                padding: 15px;
+                margin: 20px 0;
+                border-radius: 5px;
+            }}
+            .footer {{
+                background: #f4f4f4;
+                padding: 20px;
+                text-align: center;
+                color: #666;
+                font-size: 12px;
+            }}
+            .button {{
+                display: inline-block;
+                background: #4a90e2;
+                color: white;
+                padding: 12px 30px;
+                text-decoration: none;
+                border-radius: 5px;
+                margin: 10px 0;
+                font-weight: bold;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🔐 DUT Lost & Found</h1>
+                <p>Password Reset Request</p>
+            </div>
+            <div class="content">
+                <p>Dear <strong>{name}</strong>,</p>
+                
+                <p>We received a request to reset your password for your DUT Lost & Found account.</p>
+                
+                <div class="code-box">
+                    <p>Your password reset code is:</p>
+                    <div class="reset-code">{reset_code}</div>
+                </div>
+                
+                <div class="warning">
+                    <p style="margin: 0;"><strong>⚠️ This code will expire in 30 minutes</strong></p>
+                    <p style="margin: 5px 0 0 0; font-size: 0.9rem;">If you didn't request this, please ignore this email.</p>
+                </div>
+                
+                <p style="margin-top: 20px;">
+                    <strong>How to reset your password:</strong>
+                </p>
+                <ol style="margin-left: 20px; color: #666;">
+                    <li>Go to the password reset page</li>
+                    <li>Enter your email address</li>
+                    <li>Enter this 6-digit code</li>
+                    <li>Create your new password</li>
+                </ol>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="{url_for('verify_reset_code', email=email, _external=True)}" class="button">Click here to reset password</a>
+                </div>
+            </div>
+            <div class="footer">
+                <p>© 2026 Durban University of Technology</p>
+                <p>DUT Lost & Found - Helping students reunite with lost items</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    # Plain text version as backup
+    text_content = f"""
+    DUT Lost & Found - Password Reset Request
+    
+    Dear {name},
+    
+    We received a request to reset your password for your DUT Lost & Found account.
+    
+    Your password reset code is: {reset_code}
+    
+    This code will expire in 30 minutes.
+    If you didn't request this, please ignore this email.
+    
+    How to reset your password:
+    1. Go to the password reset page
+    2. Enter your email address
+    3. Enter this 6-digit code: {reset_code}
+    4. Create your new password
+    
+    Or click this link: {url_for('verify_reset_code', email=email, _external=True)}
+    
+    © 2026 Durban University of Technology
+    """
+    
+    try:
+        msg = Message(
+            subject=subject,
+            recipients=[email],
+            html=html_content,
+            body=text_content
+        )
+        mail.send(msg)
+        print(f"✅ Password reset email sent to: {email} with code: {reset_code}")
+        return True
+    except Exception as e:
+        print(f"❌ Error sending password reset email: {e}")
+        traceback.print_exc()
         return False
 
 # ==================== ROUTES ====================
@@ -359,16 +705,21 @@ def home():
 def register():
     if request.method == 'POST':
         full_name = request.form['full_name']
-        id_number = request.form['id_number']
         email = request.form['email'].lower()
         phone = request.form.get('phone', '')
         password = request.form['password']
         student_number = extract_student_number(email)
+        
+        # Check if terms were agreed
+        if not request.form.get('terms_agreed'):
+            flash("You must agree to the Terms and Conditions to register.", "danger")
+            return render_template('register.html')
 
         if not is_dut_email(email):
             flash("Please use your DUT4Life email (studentnumber@dut4life.ac.za)", "danger")
             return render_template('register.html')
 
+        # Only validate password format, not age
         if not is_valid_password(password):
             flash("Password must be in format: $$Dut followed by 6 digits (YYMMDD)", "danger")
             return render_template('register.html')
@@ -381,15 +732,12 @@ def register():
             conn.close()
             return render_template('register.html')
         
-        existing_id = conn.execute("SELECT * FROM users WHERE id_number = ?", (id_number,)).fetchone()
-        if existing_id:
-            flash("ID number already registered!", "danger")
-            conn.close()
-            return render_template('register.html')
+        import secrets
+        placeholder_id = secrets.token_hex(8)[:16]
         
         conn.execute('''INSERT INTO users (student_number, full_name, email, id_number, phone, password)
                         VALUES (?, ?, ?, ?, ?, ?)''',
-                     (student_number, full_name, email, id_number, phone, password))
+                     (student_number, full_name, email, placeholder_id, phone, password))
         conn.commit()
         conn.close()
         
@@ -471,68 +819,149 @@ def forgot_password():
         user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
         
         if user:
-            token = secrets.token_urlsafe(32)
-            expires_at = datetime.now() + timedelta(hours=24)
+            # Generate 6-digit reset code
+            reset_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+            expires_at = datetime.now() + timedelta(minutes=30)
             
+            # Delete any existing unused codes for this user
             conn.execute("DELETE FROM password_resets WHERE user_id = ? AND used = 0", (user['id'],))
-            conn.execute('''INSERT INTO password_resets (user_id, token, expires_at)
-                            VALUES (?, ?, ?)''', (user['id'], token, expires_at))
+            
+            # Store new reset code
+            conn.execute('''INSERT INTO password_resets (user_id, email, reset_code, expires_at)
+                            VALUES (?, ?, ?, ?)''', (user['id'], email, reset_code, expires_at))
             conn.commit()
             
-            email_sent = send_password_reset_email(user['email'], user['full_name'], token)
+            print(f"🔑 Reset code generated for {email}: {reset_code}")
+            
+            # Send reset email
+            email_sent = send_password_reset_email(user['email'], user['full_name'], reset_code)
             
             if email_sent:
-                flash("Password reset instructions have been sent to your email.", "success")
+                flash("A password reset code has been sent to your email. Please check your inbox.", "success")
+                return redirect(url_for('verify_reset_code', email=email))
             else:
-                flash("Error sending email. Please try again.", "danger")
-                conn.execute("DELETE FROM password_resets WHERE token = ?", (token,))
+                flash("There was an error sending the email. Please try again later.", "danger")
+                conn.execute("DELETE FROM password_resets WHERE reset_code = ?", (reset_code,))
                 conn.commit()
         else:
-            flash("If your email is registered, you will receive reset instructions.", "info")
+            flash("If your email is registered, you will receive a reset code.", "info")
+            print(f"🔍 Password reset requested for non-existent email: {email}")
+            return redirect(url_for('forgot_password'))
         
         conn.close()
-        return redirect(url_for('forgot_password'))
     
     return render_template('forgot_password.html')
 
-@app.route('/reset-password/<token>', methods=['GET', 'POST'])
-def reset_password(token):
+@app.route('/verify-reset-code/<email>', methods=['GET', 'POST'])
+def verify_reset_code(email):
+    if request.method == 'POST':
+        reset_code = request.form.get('reset_code', '').strip()
+        
+        if not reset_code:
+            flash("Please enter the reset code.", "danger")
+            return render_template('verify_reset_code.html', email=email)
+        
+        conn = get_db()
+        
+        # Check if code is valid
+        reset = conn.execute('''
+            SELECT * FROM password_resets 
+            WHERE email = ? AND reset_code = ? AND used = 0 AND expires_at > CURRENT_TIMESTAMP
+            ORDER BY created_at DESC LIMIT 1
+        ''', (email, reset_code)).fetchone()
+        
+        if not reset:
+            # Check if code exists but is expired
+            expired = conn.execute('''
+                SELECT * FROM password_resets 
+                WHERE email = ? AND reset_code = ? AND used = 0 AND expires_at <= CURRENT_TIMESTAMP
+            ''', (email, reset_code)).fetchone()
+            
+            conn.close()
+            
+            if expired:
+                flash("This reset code has expired. Please request a new one.", "danger")
+            else:
+                flash("Invalid reset code. Please try again.", "danger")
+            
+            return redirect(url_for('forgot_password'))
+        
+        # Store the reset ID in session for password reset
+        session['reset_id'] = reset['id']
+        session['reset_email'] = email
+        
+        conn.close()
+        
+        return redirect(url_for('reset_password_with_code'))
+    
+    return render_template('verify_reset_code.html', email=email)
+
+@app.route('/reset-password-with-code', methods=['GET', 'POST'])
+def reset_password_with_code():
+    if 'reset_id' not in session:
+        flash("Please request a password reset first.", "danger")
+        return redirect(url_for('forgot_password'))
+    
+    reset_id = session['reset_id']
+    email = session['reset_email']
+    
     conn = get_db()
     
+    # Verify the reset code is still valid
     reset = conn.execute('''
-        SELECT pr.*, u.email, u.full_name 
-        FROM password_resets pr
-        JOIN users u ON pr.user_id = u.id
-        WHERE pr.token = ? AND pr.used = 0 AND pr.expires_at > CURRENT_TIMESTAMP
-    ''', (token,)).fetchone()
+        SELECT * FROM password_resets 
+        WHERE id = ? AND used = 0 AND expires_at > CURRENT_TIMESTAMP
+    ''', (reset_id,)).fetchone()
     
     if not reset:
-        conn.close()
-        flash("Invalid or expired reset link. Please request a new one.", "danger")
+        session.pop('reset_id', None)
+        session.pop('reset_email', None)
+        flash("Your reset code has expired. Please request a new one.", "danger")
         return redirect(url_for('forgot_password'))
     
     if request.method == 'POST':
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         
+        # Validate password format only - NO AGE CHECK
         if not is_valid_password(password):
             flash("Password must be in format: $$Dut followed by 6 digits (YYMMDD)", "danger")
-            return render_template('reset_password.html', token=token)
+            return render_template('reset_password_with_code.html', email=email)
         
         if password != confirm_password:
             flash("Passwords do not match!", "danger")
-            return render_template('reset_password.html', token=token)
+            return render_template('reset_password_with_code.html', email=email)
         
-        conn.execute("UPDATE users SET password = ? WHERE id = ?", (password, reset['user_id']))
-        conn.execute("UPDATE password_resets SET used = 1 WHERE id = ?", (reset['id'],))
+        # Update password
+        conn.execute("UPDATE users SET password = ? WHERE email = ?", (password, email))
+        
+        # Mark reset code as used
+        conn.execute("UPDATE password_resets SET used = 1 WHERE id = ?", (reset_id,))
         conn.commit()
         conn.close()
         
-        flash("Your password has been reset successfully!", "success")
+        # Clear session
+        session.pop('reset_id', None)
+        session.pop('reset_email', None)
+        
+        flash("✅ Your password has been reset successfully! Please login with your new password.", "success")
         return redirect(url_for('login'))
     
     conn.close()
-    return render_template('reset_password.html', token=token)
+    return render_template('reset_password_with_code.html', email=email)
+
+@app.route('/test-email')
+def test_email():
+    try:
+        msg = Message(
+            subject="Test Email from DUT Lost & Found",
+            recipients=[ADMIN_EMAIL],
+            body="This is a test email to verify the mail configuration is working correctly."
+        )
+        mail.send(msg)
+        return "✅ Test email sent successfully! Check your inbox."
+    except Exception as e:
+        return f"❌ Error sending test email: {str(e)}"
 
 # ==================== DASHBOARD ====================
 @app.route('/dashboard')
@@ -546,19 +975,16 @@ def dashboard():
     
     conn = get_db()
     
-    # Get user's lost items
     lost_items = conn.execute('''SELECT * FROM lost_items 
                                   WHERE user_id = ? 
                                   ORDER BY created_at DESC''', 
                               (user['id'],)).fetchall()
     
-    # Get user's found items
     found_items = conn.execute('''SELECT * FROM found_items 
                                    WHERE user_id = ? 
                                    ORDER BY created_at DESC''', 
                                (user['id'],)).fetchall()
     
-    # Get user's claims
     claims = conn.execute('''SELECT c.*, 
                               CASE 
                                   WHEN c.item_type = 'lost' THEN li.item_name
@@ -571,8 +997,6 @@ def dashboard():
                            ORDER BY c.created_at DESC''', 
                        (user['id'],)).fetchall()
     
-    # Get relevant found items that match user's lost items (by category)
-    # EXCLUDE items that have already been claimed by this user
     lost_categories = [item['category'] for item in lost_items]
     if lost_categories:
         placeholders = ','.join(['?'] * len(set(lost_categories)))
@@ -589,7 +1013,6 @@ def dashboard():
     else:
         relevant_found_items = []
     
-    # Get potential matches with confidence score
     matches_list = []
     for lost in lost_items:
         for found in relevant_found_items:
@@ -606,7 +1029,6 @@ def dashboard():
                     'confidence': score
                 })
     
-    # Remove duplicates based on found_id
     seen = set()
     unique_matches = []
     for match in matches_list:
@@ -614,12 +1036,9 @@ def dashboard():
             seen.add(match['found_id'])
             unique_matches.append(match)
     
-    # Sort by confidence score
     unique_matches.sort(key=lambda x: x['confidence'], reverse=True)
     
-    # Create notifications for new matches (only for items not already claimed)
     for match in unique_matches[:10]:
-        # Check if notification already exists for this match
         existing = conn.execute('''SELECT id FROM notifications 
                                    WHERE user_id = ? 
                                    AND type = 'match' 
@@ -634,7 +1053,6 @@ def dashboard():
                         (user['id'], 'match', message, datetime.now().isoformat()))
             conn.commit()
     
-    # Get notifications
     notifications = conn.execute('''SELECT * FROM notifications 
                                      WHERE user_id = ? 
                                      ORDER BY created_at DESC 
@@ -645,7 +1063,6 @@ def dashboard():
                                      WHERE user_id = ? AND is_read = 0''', 
                                  (user['id'],)).fetchone()['count']
     
-    # Get recent activities
     recent_activities = []
     
     for item in lost_items[:5]:
@@ -699,45 +1116,162 @@ def dashboard():
         now=now
     )
 
-# ==================== NOTIFICATION ROUTES ====================
-@app.route('/mark-notification-read/<int:notification_id>', methods=['POST'])
-def mark_notification_read(notification_id):
-    if 'user' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
-    
-    conn = get_db()
-    conn.execute('UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?',
-                (notification_id, session['user']['id']))
-    conn.commit()
-    conn.close()
-    
-    return jsonify({'success': True})
+# ==================== CONTINUED WITH REMAINING ROUTES ====================
+# [The rest of your routes remain the same - matches, admin routes, etc.]
+# I'll continue with the remaining routes...
 
-@app.route('/mark-all-notifications-read', methods=['POST'])
-def mark_all_notifications_read():
+@app.route('/my-rewards')
+def my_rewards():
     if 'user' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
+        flash("Please login to view your rewards", "warning")
+        return redirect(url_for('login'))
     
     conn = get_db()
-    conn.execute('UPDATE notifications SET is_read = 1 WHERE user_id = ?',
-                (session['user']['id'],))
-    conn.commit()
+    
+    rewards = conn.execute('''
+        SELECT fr.*, c.id as claim_id, 
+               CASE 
+                   WHEN c.item_type == 'found' THEN fi.item_name
+                   ELSE li.item_name
+               END as item_name
+        FROM finder_rewards fr
+        JOIN claims c ON fr.claim_id = c.id
+        LEFT JOIN found_items fi ON c.item_id = fi.id AND c.item_type = 'found'
+        LEFT JOIN lost_items li ON c.item_id = li.id AND c.item_type = 'lost'
+        WHERE fr.user_id = ?
+        ORDER BY fr.created_at DESC
+    ''', (session['user']['id'],)).fetchall()
+    
     conn.close()
     
-    return jsonify({'success': True})
+    return render_template('my_rewards.html', user=session['user'], rewards=[dict(r) for r in rewards])
 
-@app.route('/api/notifications/count')
-def notification_count():
+@app.route('/select-reward/<int:claim_id>', methods=['GET', 'POST'])
+def select_reward(claim_id):
     if 'user' not in session:
-        return jsonify({'count': 0})
+        flash("Please login to select your reward", "warning")
+        return redirect(url_for('login'))
     
-    conn = get_db()
-    count = conn.execute('''SELECT COUNT(*) as count FROM notifications 
-                            WHERE user_id = ? AND is_read = 0''',
-                         (session['user']['id'],)).fetchone()['count']
-    conn.close()
+    conn = None
+    try:
+        conn = get_db()
+        
+        reward = conn.execute('''
+            SELECT fr.*, fi.item_name, fi.user_id as finder_id, fi.id as found_item_id
+            FROM finder_rewards fr
+            JOIN found_items fi ON fr.item_name = fi.item_name
+            WHERE fr.claim_id = ? AND fr.user_id = ? AND fr.status = 'pending'
+        ''', (claim_id, session['user']['id'])).fetchone()
+        
+        if not reward:
+            flash("Reward not available or already claimed", "danger")
+            conn.close()
+            return redirect(url_for('dashboard'))
+        
+        if request.method == 'POST':
+            reward_choice = request.form.get('reward_choice')
+            
+            if reward_choice not in ['free_lunch', 'cash_r100', 'miracle_box']:
+                flash("Invalid reward selection", "danger")
+                conn.close()
+                return redirect(url_for('select_reward', claim_id=claim_id))
+            
+            reward_details = {
+                'free_lunch': {
+                    'name': '🍽️ Free Lunch at DUT Cafeteria',
+                    'value': 'R50 value'
+                },
+                'cash_r100': {
+                    'name': '💰 R100 Cash Voucher',
+                    'value': 'R100'
+                },
+                'miracle_box': {
+                    'name': '🎁 Miracle Box',
+                    'value': 'Surprise value'
+                }
+            }
+            
+            selected_reward = reward_details[reward_choice]
+            
+            conn.execute('''UPDATE finder_rewards 
+                            SET reward_selected = ?, reward_type = ?, status = 'selected', selected_at = ?
+                            WHERE claim_id = ? AND user_id = ?''',
+                         (reward_choice, selected_reward['name'], datetime.now().isoformat(), claim_id, session['user']['id']))
+            conn.commit()
+            
+            # Send confirmation notification to finder
+            confirmation_message = f"""🎉 Thank you for your honesty! Your reward ({selected_reward['name']}) has been recorded. 
+            The admin will contact you within 2-3 business days to arrange delivery."""
+            
+            conn.execute('''INSERT INTO notifications (user_id, type, message, created_at, is_read)
+                            VALUES (?, ?, ?, ?, 0)''',
+                         (session['user']['id'], 'reward_selected', confirmation_message, datetime.now().isoformat()))
+            
+            # Get found item details
+            found_item = conn.execute('''
+                SELECT fi.*, u.full_name as finder_name, u.email as finder_email
+                FROM found_items fi
+                JOIN users u ON fi.user_id = u.id
+                WHERE fi.id = ?
+            ''', (reward['found_item_id'],)).fetchone()
+            
+            # Notify all admins
+            admins = conn.execute("SELECT id FROM users WHERE role = 'admin'").fetchall()
+            for admin in admins:
+                admin_message = f"🏆 REWARD SELECTED! Finder: {found_item['finder_name']} selected {selected_reward['name']} for item: {found_item['item_name']}"
+                conn.execute('''INSERT INTO notifications (user_id, type, message, created_at, is_read)
+                                VALUES (?, ?, ?, ?, 0)''',
+                             (admin['id'], 'reward_selected_admin', admin_message, datetime.now().isoformat()))
+            
+            # Create admin reward log
+            conn.execute('''INSERT INTO admin_reward_log (claim_id, finder_id, finder_name, item_name, reward_type, reward_value, selected_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                         (claim_id, session['user']['id'], found_item['finder_name'], found_item['item_name'], 
+                          selected_reward['name'], selected_reward['value'], datetime.now().isoformat()))
+            
+            conn.commit()
+            conn.close()
+            flash("Thank you for your honesty! Your reward has been recorded. The admin will contact you soon.", "success")
+            return redirect(url_for('dashboard'))
+        
+        reward_options = [
+            {
+                'value': 'free_lunch',
+                'name': '🍽️ Free Lunch at DUT Cafeteria',
+                'description': 'Enjoy a delicious meal at any DUT cafeteria on campus.',
+                'icon': 'fa-utensils',
+                'details': 'Redeemable at any DUT campus cafeteria'
+            },
+            {
+                'value': 'cash_r100',
+                'name': '💰 R100 Cash Voucher',
+                'description': 'R100 cash voucher usable at participating stores on campus.',
+                'icon': 'fa-money-bill-wave',
+                'details': 'Valid at DUT Bookstore and Cafeteria'
+            },
+            {
+                'value': 'miracle_box',
+                'name': '🎁 Miracle Box',
+                'description': 'A surprise gift box! Could be anything from DUT merchandise to tech accessories.',
+                'icon': 'fa-gift',
+                'details': 'Past gifts: power banks, hoodies, notebooks'
+            }
+        ]
+        
+        conn.close()
+        
+        return render_template('select_reward.html', 
+                             user=session['user'], 
+                             reward_options=reward_options,
+                             item_name=reward['item_name'],
+                             claim_id=claim_id)
     
-    return jsonify({'count': count})
+    except Exception as e:
+        if conn:
+            conn.close()
+        print(f"Error in select_reward: {e}")
+        flash("An error occurred while processing your reward. Please try again.", "danger")
+        return redirect(url_for('dashboard'))
 
 # ==================== MATCH FUNCTIONS ====================
 def calculate_match_score(lost_item, found_item):
@@ -795,6 +1329,46 @@ def calculate_text_similarity(text1, text2):
     
     return len(intersection) / len(union)
 
+def get_match_factors(lost_item, found_item):
+    factors = {
+        'category_match': lost_item['category'] == found_item['category'],
+        'name_similarity': round(calculate_text_similarity(
+            lost_item['item_name'], found_item['item_name']
+        ) * 100),
+        'location_match': lost_item['location'] == found_item['location'],
+        'date_proximity': 0,
+        'description_match': False,
+        'exact_match': False
+    }
+    
+    try:
+        lost_date = datetime.strptime(lost_item['date_lost'], '%Y-%m-%d')
+        found_date = datetime.strptime(found_item['date_found'], '%Y-%m-%d')
+        days_diff = (found_date - lost_date).days
+        
+        if 0 <= days_diff <= 30:
+            if days_diff <= 7:
+                factors['date_proximity'] = 20
+            elif days_diff <= 14:
+                factors['date_proximity'] = 15
+            else:
+                factors['date_proximity'] = 10
+    except:
+        pass
+    
+    if lost_item.get('description') and found_item.get('description'):
+        similarity = calculate_text_similarity(
+            lost_item['description'],
+            found_item['description']
+        )
+        factors['description_match'] = similarity > 0.3
+    
+    if (lost_item['item_name'].lower() == found_item['item_name'].lower() and
+        lost_item['category'] == found_item['category']):
+        factors['exact_match'] = True
+    
+    return factors
+
 # ==================== ADMIN ROUTES ====================
 @app.route('/admin/dashboard')
 def admin_dashboard():
@@ -811,6 +1385,14 @@ def admin_dashboard():
     pending_claims = conn.execute("SELECT COUNT(*) as count FROM claims WHERE status = 'pending'").fetchone()['count']
     resolved_count = conn.execute("SELECT COUNT(*) as count FROM item_history").fetchone()['count']
     
+    recent_rewards = conn.execute('''
+        SELECT rl.*, u.full_name as finder_name, u.email as finder_email
+        FROM admin_reward_log rl
+        JOIN users u ON rl.finder_id = u.id
+        ORDER BY rl.selected_at DESC
+        LIMIT 10
+    ''').fetchall()
+    
     recent_lost = conn.execute('''SELECT * FROM lost_items WHERE status = 'pending'
                                    ORDER BY created_at DESC LIMIT 5''').fetchall()
     recent_found = conn.execute('''SELECT * FROM found_items WHERE status = 'available'
@@ -825,6 +1407,7 @@ def admin_dashboard():
                          total_found=total_found,
                          pending_claims=pending_claims,
                          resolved_count=resolved_count,
+                         recent_rewards=[dict(r) for r in recent_rewards],
                          lost_items=[dict(l) for l in recent_lost],
                          found_items=[dict(f) for f in recent_found],
                          now=now)
@@ -832,7 +1415,7 @@ def admin_dashboard():
 @app.route('/admin/lost-items')
 def admin_lost_items():
     if 'user' not in session or session['user']['role'] != 'admin':
-        flash("Access denied! This area is for administrators only.", "danger")
+        flash("Access denied!", "danger")
         return redirect(url_for('login'))
     
     page = int(request.args.get('page', 1))
@@ -843,7 +1426,6 @@ def admin_lost_items():
     
     conn = get_db()
     
-    # Build query
     sql = """SELECT li.*, u.full_name as reporter_name, u.email as reporter_email, u.student_number 
              FROM lost_items li 
              JOIN users u ON li.user_id = u.id 
@@ -863,27 +1445,22 @@ def admin_lost_items():
         sql += " AND li.status = ?"
         params.append(status)
     
-    # Get total count for pagination
     count_sql = sql.replace("li.*, u.full_name as reporter_name, u.email as reporter_email, u.student_number", "COUNT(*) as count")
     total = conn.execute(count_sql, params).fetchone()['count']
     
-    # Add sorting and pagination
     sql += " ORDER BY li.created_at DESC LIMIT ? OFFSET ?"
     params.extend([per_page, (page-1)*per_page])
     
     items = conn.execute(sql, params).fetchall()
     
-    # Get categories for filter
     categories = conn.execute("SELECT DISTINCT category FROM lost_items").fetchall()
     
-    # Get counts for sidebar badges and stats
     total_lost = conn.execute("SELECT COUNT(*) as count FROM lost_items").fetchone()['count']
     total_found = conn.execute("SELECT COUNT(*) as count FROM found_items").fetchone()['count']
     pending_claims = conn.execute("SELECT COUNT(*) as count FROM claims WHERE status = 'pending'").fetchone()['count']
     resolved_count = conn.execute("SELECT COUNT(*) as count FROM item_history").fetchone()['count']
     total_users = conn.execute("SELECT COUNT(*) as count FROM users").fetchone()['count']
     
-    # Get stats for lost items - Total Lost, Pending, Resolved
     pending_lost_count = conn.execute("SELECT COUNT(*) as count FROM lost_items WHERE status = 'pending'").fetchone()['count']
     resolved_lost_count = conn.execute("SELECT COUNT(*) as count FROM lost_items WHERE status = 'resolved'").fetchone()['count']
     
@@ -913,7 +1490,7 @@ def admin_lost_items():
 @app.route('/admin/found-items')
 def admin_found_items():
     if 'user' not in session or session['user']['role'] != 'admin':
-        flash("Access denied! This area is for administrators only.", "danger")
+        flash("Access denied!", "danger")
         return redirect(url_for('login'))
     
     page = int(request.args.get('page', 1))
@@ -924,7 +1501,6 @@ def admin_found_items():
     
     conn = get_db()
     
-    # Build query
     sql = """SELECT fi.*, u.full_name as reporter_name, u.email as reporter_email, u.student_number 
              FROM found_items fi 
              JOIN users u ON fi.user_id = u.id 
@@ -944,27 +1520,22 @@ def admin_found_items():
         sql += " AND fi.status = ?"
         params.append(status)
     
-    # Get total count for pagination
     count_sql = sql.replace("fi.*, u.full_name as reporter_name, u.email as reporter_email, u.student_number", "COUNT(*) as count")
     total = conn.execute(count_sql, params).fetchone()['count']
     
-    # Add sorting and pagination
     sql += " ORDER BY fi.created_at DESC LIMIT ? OFFSET ?"
     params.extend([per_page, (page-1)*per_page])
     
     items = conn.execute(sql, params).fetchall()
     
-    # Get categories for filter
     categories = conn.execute("SELECT DISTINCT category FROM found_items").fetchall()
     
-    # Get counts for sidebar badges
     total_lost = conn.execute("SELECT COUNT(*) as count FROM lost_items").fetchone()['count']
     total_found = conn.execute("SELECT COUNT(*) as count FROM found_items").fetchone()['count']
     pending_claims = conn.execute("SELECT COUNT(*) as count FROM claims WHERE status = 'pending'").fetchone()['count']
     resolved_count = conn.execute("SELECT COUNT(*) as count FROM item_history").fetchone()['count']
     total_users = conn.execute("SELECT COUNT(*) as count FROM users").fetchone()['count']
     
-    # Get stats for found items - Total Found, Available, Resolved
     available_items = conn.execute("SELECT COUNT(*) as count FROM found_items WHERE status = 'available'").fetchone()['count']
     resolved_found_count = conn.execute("SELECT COUNT(*) as count FROM found_items WHERE status = 'resolved'").fetchone()['count']
     
@@ -994,29 +1565,25 @@ def admin_found_items():
 @app.route('/admin/pending-claims')
 def admin_pending_claims():
     if 'user' not in session or session['user']['role'] != 'admin':
-        flash("Access denied! This area is for administrators only.", "danger")
+        flash("Access denied!", "danger")
         return redirect(url_for('login'))
     
     conn = get_db()
     now = datetime.now()
     
-    # Get all pending claims
     pending_claims_list = conn.execute('''
         SELECT 
             c.id,
             c.message,
             c.created_at,
             c.status,
-            c.claimant_id,
-            c.item_id as found_item_id,
-            
-            -- Claimant details
+            c.item_type as claimed_item_type,
+            c.item_id as claimed_item_id,
+            claimant.id as claimant_id,
             claimant.full_name as claimant_name,
             claimant.email as claimant_email,
             claimant.phone as claimant_phone,
             claimant.student_number as claimant_student_number,
-            
-            -- Found item details
             fi.id as found_item_id,
             fi.item_name as found_item_name,
             fi.description as found_item_description,
@@ -1025,15 +1592,9 @@ def admin_pending_claims():
             fi.image_path as found_item_image,
             fi.category as found_item_category,
             fi.user_id as finder_id,
-            fi.contact_name as finder_contact_name,
-            fi.contact_email as finder_contact_email,
-            fi.contact_phone as finder_contact_phone,
-            
-            -- Finder details
             finder.full_name as finder_name,
             finder.email as finder_email,
             finder.phone as finder_phone
-            
         FROM claims c
         JOIN users claimant ON c.claimant_id = claimant.id
         JOIN found_items fi ON c.item_id = fi.id
@@ -1042,24 +1603,13 @@ def admin_pending_claims():
         ORDER BY c.created_at DESC
     ''').fetchall()
     
-    # Process each claim to get the claimant's lost items
     processed_claims = []
     for claim in pending_claims_list:
         claim_dict = dict(claim)
         
-        # Get the claimant's lost items (what they reported as lost)
         lost_items = conn.execute('''
-            SELECT 
-                id,
-                item_name,
-                description,
-                date_lost,
-                location,
-                image_path,
-                category,
-                contact_name,
-                contact_email,
-                contact_phone
+            SELECT id, item_name, description, date_lost, location, image_path, category,
+                   contact_name, contact_email, contact_phone
             FROM lost_items 
             WHERE user_id = ? AND status = 'pending'
             ORDER BY created_at DESC
@@ -1087,16 +1637,15 @@ def admin_pending_claims():
             claim_dict['lost_owner_email'] = claim_dict['claimant_email']
             claim_dict['lost_owner_phone'] = claim_dict['claimant_phone']
         
-        # Set found item fields
         claim_dict['found_item_name'] = claim_dict.get('found_item_name') or ''
         claim_dict['found_item_description'] = claim_dict.get('found_item_description') or ''
         claim_dict['found_item_location'] = claim_dict.get('found_item_location') or ''
         claim_dict['found_item_date'] = claim_dict.get('found_item_date') or ''
         claim_dict['found_item_image'] = claim_dict.get('found_item_image') or ''
         claim_dict['found_item_category'] = claim_dict.get('found_item_category') or ''
-        claim_dict['found_owner_name'] = claim_dict.get('finder_name') or ''
-        claim_dict['found_owner_email'] = claim_dict.get('finder_email') or ''
-        claim_dict['found_owner_phone'] = claim_dict.get('finder_phone') or ''
+        claim_dict['finder_name'] = claim_dict.get('finder_name') or ''
+        claim_dict['finder_email'] = claim_dict.get('finder_email') or ''
+        claim_dict['finder_phone'] = claim_dict.get('finder_phone') or ''
         
         processed_claims.append(claim_dict)
     
@@ -1112,13 +1661,12 @@ def admin_pending_claims():
 @app.route('/admin/history')
 def admin_history():
     if 'user' not in session or session['user']['role'] != 'admin':
-        flash("Access denied! This area is for administrators only.", "danger")
+        flash("Access denied!", "danger")
         return redirect(url_for('login'))
     
     conn = get_db()
     now = datetime.now()
     
-    # Get all resolved items from history
     history_items = conn.execute('''
         SELECT 
             h.*,
@@ -1135,12 +1683,10 @@ def admin_history():
         LIMIT 100
     ''').fetchall()
     
-    # Get statistics
     total_resolved = conn.execute("SELECT COUNT(*) as count FROM item_history").fetchone()['count']
     total_lost_resolved = conn.execute("SELECT COUNT(*) as count FROM item_history WHERE item_type = 'lost'").fetchone()['count']
     total_found_resolved = conn.execute("SELECT COUNT(*) as count FROM item_history WHERE item_type = 'found'").fetchone()['count']
     
-    # Get counts for sidebar badges
     total_lost = conn.execute("SELECT COUNT(*) as count FROM lost_items").fetchone()['count']
     total_found = conn.execute("SELECT COUNT(*) as count FROM found_items").fetchone()['count']
     pending_claims = conn.execute("SELECT COUNT(*) as count FROM claims WHERE status = 'pending'").fetchone()['count']
@@ -1191,30 +1737,23 @@ def admin_handle_claim(claim_id, action):
         if status == 'approved':
             current_time = datetime.now().isoformat()
             
-            # For a claim on a found item (someone is claiming a found item)
             if claim_dict['item_type'] == 'found':
-                # Get the found item details
                 found_item = conn.execute('''SELECT * FROM found_items WHERE id = ?''', 
                                           (claim_dict['item_id'],)).fetchone()
                 
                 if found_item:
-                    # Mark the found item as resolved
                     conn.execute('''UPDATE found_items 
-                                    SET status = 'resolved', 
-                                        resolved_at = ?, 
-                                        resolved_by = ?
+                                    SET status = 'resolved', resolved_at = ?, resolved_by = ?
                                     WHERE id = ?''', 
                                  (current_time, session['user']['id'], claim_dict['item_id']))
                     
-                    # Add to history
                     conn.execute('''INSERT INTO item_history 
                                     (item_id, item_type, item_name, category, found_by_id, claimed_by_id, resolved_at, resolved_by, notes)
                                     SELECT ?, 'found', item_name, category, user_id, ?, ?, ?, ?
                                     FROM found_items WHERE id = ?''', 
                                  (claim_dict['item_id'], claim_dict['claimant_id'], current_time, 
-                                  session['user']['id'], f"Claim approved by admin - Item returned to owner", claim_dict['item_id']))
+                                  session['user']['id'], "Claim approved - Item returned to owner", claim_dict['item_id']))
                     
-                    # Also find and mark the matching lost item
                     lost_items = conn.execute('''
                         SELECT id, item_name, category FROM lost_items 
                         WHERE user_id = ? AND status = 'pending'
@@ -1222,91 +1761,71 @@ def admin_handle_claim(claim_id, action):
                     ''', (claim_dict['claimant_id'],)).fetchone()
                     
                     if lost_items:
-                        # Mark the lost item as resolved
                         conn.execute('''UPDATE lost_items 
-                                        SET status = 'resolved', 
-                                            resolved_at = ?, 
-                                            resolved_by = ?
+                                        SET status = 'resolved', resolved_at = ?, resolved_by = ?
                                         WHERE id = ?''', 
                                      (current_time, session['user']['id'], lost_items['id']))
                         
-                        # Add lost item to history
                         conn.execute('''INSERT INTO item_history 
                                         (item_id, item_type, item_name, category, lost_by_id, claimed_by_id, resolved_at, resolved_by, notes)
                                         VALUES (?, 'lost', ?, ?, ?, ?, ?, ?, ?)''', 
                                      (lost_items['id'], lost_items['item_name'], lost_items['category'], 
                                       claim_dict['claimant_id'], found_item['user_id'], current_time, 
                                       session['user']['id'], f"Matched with found item: {found_item['item_name']}"))
+                    
+                    # Create reward for finder
+                    conn.execute('''INSERT INTO finder_rewards (claim_id, user_id, item_name, reward_type, status, created_at)
+                                    VALUES (?, ?, ?, 'pending', 'pending', ?)''',
+                                 (claim_id, found_item['user_id'], found_item['item_name'], current_time))
+                    
+                    reward_link = url_for('select_reward', claim_id=claim_id, _external=True)
+                    reward_message = f"""🎁 Congratulations! Your honesty in returning '{found_item['item_name']}' has earned you a reward! 
+                    Click here to select your reward: <a href="{reward_link}" style="color: #4a90e2; text-decoration: underline; font-weight: bold;">Choose Your Reward →</a>"""
+                    
+                    conn.execute('''INSERT INTO notifications (user_id, type, message, created_at, is_read)
+                                    VALUES (?, ?, ?, ?, 0)''',
+                                 (found_item['user_id'], 'reward_available', reward_message, datetime.now().isoformat()))
             
-            # For a claim on a lost item (someone found a lost item)
-            else:
-                # Get the lost item details
-                lost_item = conn.execute('''SELECT * FROM lost_items WHERE id = ?''', 
-                                         (claim_dict['item_id'],)).fetchone()
-                
-                if lost_item:
-                    # Mark the lost item as resolved
-                    conn.execute('''UPDATE lost_items 
-                                    SET status = 'resolved', 
-                                        resolved_at = ?, 
-                                        resolved_by = ?
-                                    WHERE id = ?''', 
-                                 (current_time, session['user']['id'], claim_dict['item_id']))
-                    
-                    # Add to history
-                    conn.execute('''INSERT INTO item_history 
-                                    (item_id, item_type, item_name, category, lost_by_id, claimed_by_id, resolved_at, resolved_by, notes)
-                                    SELECT ?, 'lost', item_name, category, user_id, ?, ?, ?, ?
-                                    FROM lost_items WHERE id = ?''', 
-                                 (claim_dict['item_id'], claim_dict['claimant_id'], current_time, 
-                                  session['user']['id'], f"Claim approved by admin - Item found and returned", claim_dict['item_id']))
-                    
-                    # Also find and mark the matching found item
-                    found_items = conn.execute('''
-                        SELECT id, item_name, category FROM found_items 
-                        WHERE user_id = ? AND status = 'available'
-                        ORDER BY created_at DESC LIMIT 1
-                    ''', (claim_dict['claimant_id'],)).fetchone()
-                    
-                    if found_items:
-                        # Mark the found item as resolved
-                        conn.execute('''UPDATE found_items 
-                                        SET status = 'resolved', 
-                                            resolved_at = ?, 
-                                            resolved_by = ?
-                                        WHERE id = ?''', 
-                                     (current_time, session['user']['id'], found_items['id']))
-                        
-                        # Add found item to history
-                        conn.execute('''INSERT INTO item_history 
-                                        (item_id, item_type, item_name, category, found_by_id, claimed_by_id, resolved_at, resolved_by, notes)
-                                        VALUES (?, 'found', ?, ?, ?, ?, ?, ?, ?)''', 
-                                     (found_items['id'], found_items['item_name'], found_items['category'], 
-                                      claim_dict['claimant_id'], lost_item['user_id'], current_time, 
-                                      session['user']['id'], f"Matched with lost item: {lost_item['item_name']}"))
-            
-            # Send notification to claimant
+            # Send approval notification to claimant
             conn.execute('''INSERT INTO notifications (user_id, type, message, created_at, is_read)
                             VALUES (?, ?, ?, ?, 0)''',
                          (claim_dict['claimant_id'], 'claim_approved', 
-                          'Your claim has been approved! You can now arrange pickup with the finder.', 
+                          '✅ Your claim has been approved! You can now arrange pickup with the finder.', 
                           datetime.now().isoformat()))
-            
-            # Send notification to the owner of the found item
-            if claim_dict['item_type'] == 'found':
-                found_item = conn.execute('''SELECT user_id FROM found_items WHERE id = ?''', 
-                                          (claim_dict['item_id'],)).fetchone()
-                if found_item:
-                    conn.execute('''INSERT INTO notifications (user_id, type, message, created_at, is_read)
-                                    VALUES (?, ?, ?, ?, 0)''',
-                                 (found_item['user_id'], 'claim_approved', 
-                                  f'Your found item has been claimed and approved. The owner will contact you.', 
-                                  datetime.now().isoformat()))
             
             try:
                 send_claim_approved_notification(claim_id)
             except Exception as e:
                 print(f"Email error: {e}")
+        
+        # ===== NEW: HANDLE REJECTION WITH EMAIL =====
+        elif status == 'rejected':
+            # Get claimant details
+            claimant = conn.execute('''SELECT * FROM users WHERE id = ?''', 
+                                    (claim_dict['claimant_id'],)).fetchone()
+            
+            # Get item details
+            if claim_dict['item_type'] == 'found':
+                item = conn.execute('''SELECT * FROM found_items WHERE id = ?''', 
+                                    (claim_dict['item_id'],)).fetchone()
+                item_type_text = "found item"
+            else:
+                item = conn.execute('''SELECT * FROM lost_items WHERE id = ?''', 
+                                    (claim_dict['item_id'],)).fetchone()
+                item_type_text = "lost item"
+            
+            # Send rejection notification (in-app)
+            conn.execute('''INSERT INTO notifications (user_id, type, message, created_at, is_read)
+                            VALUES (?, ?, ?, ?, 0)''',
+                         (claim_dict['claimant_id'], 'claim_rejected', 
+                          f'❌ Your claim for "{item["item_name"]}" has been rejected. The admin determined that the information provided did not match the item details.', 
+                          datetime.now().isoformat()))
+            
+            # Send rejection email
+            try:
+                send_claim_rejected_email(claimant, item, claim_dict['message'])
+            except Exception as e:
+                print(f"Error sending rejection email: {e}")
         
         conn.commit()
         flash(f"Claim {status} successfully!", "success")
@@ -1320,6 +1839,90 @@ def admin_handle_claim(claim_id, action):
         conn.close()
     
     return redirect(url_for('admin_pending_claims'))
+
+@app.route('/admin/reward-logs')
+def admin_reward_logs():
+    if 'user' not in session or session['user']['role'] != 'admin':
+        flash("Access denied!", "danger")
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    now = datetime.now()
+    
+    rewards = conn.execute('''
+        SELECT rl.*, u.full_name as finder_name, u.email as finder_email, u.phone as finder_phone,
+               fi.item_name, fi.location as found_location, fi.date_found
+        FROM admin_reward_log rl
+        JOIN users u ON rl.finder_id = u.id
+        JOIN found_items fi ON rl.item_name = fi.item_name
+        ORDER BY rl.selected_at DESC
+        LIMIT 100
+    ''').fetchall()
+    
+    total_rewards = conn.execute("SELECT COUNT(*) as count FROM admin_reward_log").fetchone()['count']
+    pending_rewards = conn.execute("SELECT COUNT(*) as count FROM admin_reward_log WHERE status = 'pending'").fetchone()['count']
+    delivered_rewards = conn.execute("SELECT COUNT(*) as count FROM admin_reward_log WHERE status = 'delivered'").fetchone()['count']
+    
+    total_lost = conn.execute("SELECT COUNT(*) as count FROM lost_items").fetchone()['count']
+    total_found = conn.execute("SELECT COUNT(*) as count FROM found_items").fetchone()['count']
+    pending_claims = conn.execute("SELECT COUNT(*) as count FROM claims WHERE status = 'pending'").fetchone()['count']
+    resolved_count = conn.execute("SELECT COUNT(*) as count FROM item_history").fetchone()['count']
+    
+    conn.close()
+    
+    return render_template('admin_reward_logs.html',
+                         user=session['user'],
+                         rewards=[dict(r) for r in rewards],
+                         total_rewards=total_rewards,
+                         pending_rewards=pending_rewards,
+                         delivered_rewards=delivered_rewards,
+                         total_lost=total_lost,
+                         total_found=total_found,
+                         pending_claims=pending_claims,
+                         resolved_count=resolved_count,
+                         now=now)
+
+@app.route('/admin/mark-reward-delivered/<int:reward_id>', methods=['POST'])
+def mark_reward_delivered(reward_id):
+    if 'user' not in session or session['user']['role'] != 'admin':
+        flash("Access denied!", "danger")
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    
+    conn.execute('''UPDATE admin_reward_log 
+                    SET status = 'delivered', delivered_at = ?
+                    WHERE id = ?''',
+                 (datetime.now().isoformat(), reward_id))
+    
+    reward = conn.execute('''
+        SELECT rl.*, u.email as finder_email, u.full_name as finder_name
+        FROM admin_reward_log rl
+        JOIN users u ON rl.finder_id = u.id
+        WHERE rl.id = ?
+    ''', (reward_id,)).fetchone()
+    
+    if reward:
+        delivery_message = f"""🎁 Good news! Your reward ({reward['reward_type']}) is ready for pickup!
+        
+        Please visit the Student Affairs office during working hours to collect your reward.
+        Bring your student ID card for verification.
+        
+        Reward: {reward['reward_type']}
+        Item: {reward['item_name']}
+        
+        Thank you for your honesty!
+        """
+        
+        conn.execute('''INSERT INTO notifications (user_id, type, message, created_at, is_read)
+                        VALUES (?, ?, ?, ?, 0)''',
+                     (reward['finder_id'], 'reward_ready', delivery_message, datetime.now().isoformat()))
+    
+    conn.commit()
+    conn.close()
+    
+    flash("Reward marked as delivered! Finder has been notified.", "success")
+    return redirect(url_for('admin_reward_logs'))
 
 @app.route('/admin/delete/lost/<int:item_id>', methods=['POST'])
 def admin_delete_lost(item_id):
@@ -1460,7 +2063,6 @@ def all_lost_items():
         flash("Please login to view items", "warning")
         return redirect(url_for('login'))
     
-    # Get search parameters
     query = request.args.get('q', '').strip()
     category = request.args.get('category', '')
     campus = request.args.get('campus', '')
@@ -1470,7 +2072,6 @@ def all_lost_items():
     
     conn = get_db()
     
-    # Build query
     sql = "SELECT li.*, u.full_name as reporter_name, u.student_number FROM lost_items li JOIN users u ON li.user_id = u.id WHERE 1=1"
     params = []
     
@@ -1487,23 +2088,19 @@ def all_lost_items():
         sql += " AND li.location LIKE ?"
         params.append(f'%{campus}%')
     
-    # Get total count
     count_sql = sql.replace("li.*, u.full_name as reporter_name, u.student_number", "COUNT(*) as count")
     total = conn.execute(count_sql, params).fetchone()['count']
     
-    # Add sorting
     if sort == 'newest':
         sql += " ORDER BY li.created_at DESC"
     else:
         sql += " ORDER BY li.created_at ASC"
     
-    # Add pagination
     sql += " LIMIT ? OFFSET ?"
     params.extend([per_page, (page-1)*per_page])
     
     items = conn.execute(sql, params).fetchall()
     
-    # Get stats
     unique_reporters = conn.execute("SELECT COUNT(DISTINCT user_id) FROM lost_items").fetchone()[0]
     pending_items = conn.execute("SELECT COUNT(*) FROM lost_items WHERE status = 'pending'").fetchone()[0]
     
@@ -1523,6 +2120,7 @@ def all_lost_items():
                          sort=sort,
                          page=page,
                          total_pages=total_pages)
+
 @app.route('/all-found')
 def all_found_items():
     if 'user' not in session:
@@ -1531,7 +2129,6 @@ def all_found_items():
     
     user_id = session['user']['id']
     
-    # Get search parameters
     query = request.args.get('q', '').strip()
     category = request.args.get('category', '')
     campus = request.args.get('campus', '')
@@ -1541,7 +2138,6 @@ def all_found_items():
     
     conn = get_db()
     
-    # First, get user's lost items categories
     user_lost_items = conn.execute('''
         SELECT DISTINCT category 
         FROM lost_items 
@@ -1550,7 +2146,6 @@ def all_found_items():
     
     lost_categories = [item['category'] for item in user_lost_items]
     
-    # If user hasn't reported any lost items, show message
     if not lost_categories:
         conn.close()
         return render_template('all_found_items.html',
@@ -1568,7 +2163,6 @@ def all_found_items():
                              has_lost_items=False,
                              lost_categories=[])
     
-    # Build query - ONLY show found items that match user's lost categories
     placeholders = ','.join(['?'] * len(lost_categories))
     sql = f"""
         SELECT fi.*, u.full_name as reporter_name, u.student_number
@@ -1579,7 +2173,6 @@ def all_found_items():
     """
     params = lost_categories.copy()
     
-    # Add search filters
     if query:
         sql += " AND (fi.item_name LIKE ? OR fi.description LIKE ? OR fi.location LIKE ?)"
         search_term = f'%{query}%'
@@ -1593,23 +2186,19 @@ def all_found_items():
         sql += " AND fi.location LIKE ?"
         params.append(f'%{campus}%')
     
-    # Get total count for pagination
     count_sql = sql.replace("fi.*, u.full_name as reporter_name, u.student_number", "COUNT(*) as count")
     total = conn.execute(count_sql, params).fetchone()['count']
     
-    # Add sorting
     if sort == 'newest':
         sql += " ORDER BY fi.created_at DESC"
     else:
         sql += " ORDER BY fi.created_at DESC"
     
-    # Add pagination
     sql += " LIMIT ? OFFSET ?"
     params.extend([per_page, (page-1)*per_page])
     
     items = conn.execute(sql, params).fetchall()
     
-    # Get stats
     if lost_categories:
         placeholders = ','.join(['?'] * len(lost_categories))
         stats_sql = f"""
@@ -1631,8 +2220,8 @@ def all_found_items():
             stats_params.append(f'%{campus}%')
         
         stats = conn.execute(stats_sql, stats_params).fetchone()
-        unique_reporters = stats['unique_reporters']
-        available_items = stats['available_items']
+        unique_reporters = stats['unique_reporters'] if stats else 0
+        available_items = stats['available_items'] if stats else 0
     else:
         unique_reporters = 0
         available_items = 0
@@ -1699,21 +2288,17 @@ def view_matches():
     
     user_id = session['user']['id']
     
-    # Get filter parameters
     min_score = int(request.args.get('min_score', 0))
     category = request.args.get('category', '')
     sort = request.args.get('sort', 'score')
     
     conn = get_db()
     
-    # Get user's lost items that are still pending (not resolved)
     lost_items = conn.execute('''SELECT * FROM lost_items 
                                   WHERE user_id = ? AND status = 'pending'
                                   ORDER BY created_at DESC''', 
                               (user_id,)).fetchall()
     
-    # Get available found items (not claimed/resolved)
-    # Also exclude items that have been claimed by this user
     found_items = conn.execute('''SELECT fi.* 
                                    FROM found_items fi
                                    WHERE fi.status = 'available'
@@ -1727,23 +2312,19 @@ def view_matches():
     matches = []
     high_confidence = 0
     
-    # Compare each lost item with each found item
     for lost in lost_items:
         lost_dict = dict(lost)
         for found in found_items:
             found_dict = dict(found)
             
-            # Calculate match score
             score = calculate_match_score(lost_dict, found_dict)
             
-            # Apply filters
             if score < min_score:
                 continue
             
             if category and lost_dict['category'] != category:
                 continue
             
-            # Get match factors
             factors = get_match_factors(lost_dict, found_dict)
             
             matches.append({
@@ -1757,18 +2338,15 @@ def view_matches():
             if score >= 70:
                 high_confidence += 1
     
-    # Sort matches
     if sort == 'score':
         matches.sort(key=lambda x: x['score'], reverse=True)
     elif sort == 'date':
         matches.sort(key=lambda x: x['date'], reverse=True)
     
-    # Get user's pending claims count
     pending_claims = conn.execute('''SELECT COUNT(*) as count FROM claims 
                                       WHERE claimant_id = ? AND status = 'pending' ''',
                                   (user_id,)).fetchone()['count']
     
-    # Get categories for filter
     categories = conn.execute("SELECT DISTINCT category FROM lost_items WHERE user_id = ?", (user_id,)).fetchall()
     categories = [c['category'] for c in categories]
     
@@ -1784,50 +2362,6 @@ def view_matches():
                          category=category,
                          sort=sort,
                          categories=categories)
-
-def get_match_factors(lost_item, found_item):
-    """Get detailed factors for why items match"""
-    factors = {
-        'category_match': lost_item['category'] == found_item['category'],
-        'name_similarity': round(calculate_text_similarity(
-            lost_item['item_name'], found_item['item_name']
-        ) * 100),
-        'location_match': lost_item['location'] == found_item['location'],
-        'date_proximity': 0,
-        'description_match': False,
-        'exact_match': False
-    }
-    
-    # Check date proximity
-    try:
-        lost_date = datetime.strptime(lost_item['date_lost'], '%Y-%m-%d')
-        found_date = datetime.strptime(found_item['date_found'], '%Y-%m-%d')
-        days_diff = (found_date - lost_date).days
-        
-        if 0 <= days_diff <= 30:
-            if days_diff <= 7:
-                factors['date_proximity'] = 20
-            elif days_diff <= 14:
-                factors['date_proximity'] = 15
-            else:
-                factors['date_proximity'] = 10
-    except:
-        pass
-    
-    # Check description similarity
-    if lost_item.get('description') and found_item.get('description'):
-        similarity = calculate_text_similarity(
-            lost_item['description'],
-            found_item['description']
-        )
-        factors['description_match'] = similarity > 0.3
-    
-    # Check for exact match
-    if (lost_item['item_name'].lower() == found_item['item_name'].lower() and
-        lost_item['category'] == found_item['category']):
-        factors['exact_match'] = True
-    
-    return factors
 
 @app.route('/item/<string:item_type>/<int:item_id>')
 def view_item(item_type, item_id):
@@ -1866,11 +2400,18 @@ def submit_claim(item_type, item_id):
         return redirect(url_for('login'))
     
     claimant_id = session['user']['id']
-    message = request.form.get('message', '')
+    message = request.form.get('message', '').strip()
+    
+    if not message:
+        flash("Please provide a valid reason why this item belongs to you.", "danger")
+        return redirect(url_for('view_item', item_type=item_type, item_id=item_id))
+    
+    if len(message) < 20:
+        flash("Please provide more details (at least 20 characters). Be specific about why this item belongs to you.", "danger")
+        return redirect(url_for('view_item', item_type=item_type, item_id=item_id))
     
     conn = get_db()
     
-    # Check if claim already exists
     existing = conn.execute('''SELECT * FROM claims 
                                 WHERE item_id = ? AND item_type = ? AND claimant_id = ?''',
                              (item_id, item_type, claimant_id)).fetchone()
@@ -1880,7 +2421,6 @@ def submit_claim(item_type, item_id):
         flash("You have already submitted a claim for this item", "danger")
         return redirect(url_for('view_item', item_type=item_type, item_id=item_id))
     
-    # Check if the item is still available
     if item_type == 'found':
         item = conn.execute("SELECT * FROM found_items WHERE id = ? AND status = 'available'", (item_id,)).fetchone()
         if not item:
@@ -1894,14 +2434,13 @@ def submit_claim(item_type, item_id):
             flash("This item has already been resolved", "danger")
             return redirect(url_for('dashboard'))
     
-    # Create claim
     conn.execute('''INSERT INTO claims (item_id, item_type, claimant_id, message)
                     VALUES (?, ?, ?, ?)''',
                  (item_id, item_type, claimant_id, message))
     conn.commit()
     conn.close()
     
-    flash("Claim submitted successfully! An admin will review it.", "success")
+    flash("Claim submitted successfully! An admin will review your claim based on the reason provided.", "success")
     return redirect(url_for('dashboard'))
 
 @app.route('/search')
@@ -1949,6 +2488,45 @@ def logout():
     session.pop('user', None)
     flash("You have been logged out.", "info")
     return redirect(url_for('home'))
+
+@app.route('/api/notifications/count')
+def notification_count():
+    if 'user' not in session:
+        return jsonify({'count': 0})
+    
+    conn = get_db()
+    count = conn.execute('''SELECT COUNT(*) as count FROM notifications 
+                            WHERE user_id = ? AND is_read = 0''',
+                         (session['user']['id'],)).fetchone()['count']
+    conn.close()
+    
+    return jsonify({'count': count})
+
+@app.route('/mark-notification-read/<int:notification_id>', methods=['POST'])
+def mark_notification_read(notification_id):
+    if 'user' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    conn = get_db()
+    conn.execute('UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?',
+                (notification_id, session['user']['id']))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True})
+
+@app.route('/mark-all-notifications-read', methods=['POST'])
+def mark_all_notifications_read():
+    if 'user' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    conn = get_db()
+    conn.execute('UPDATE notifications SET is_read = 1 WHERE user_id = ?',
+                (session['user']['id'],))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True})
 
 if __name__ == "__main__":
     app.run(debug=True)
