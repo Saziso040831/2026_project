@@ -30,8 +30,17 @@ The Lost and Found Management System is a web-based application developed to hel
 
 ## 👥 Team Members
 This project was developed by a team of 12 members as part of a university project.
-
-*(You can list names here if required)*
+- Bhengu, S'Nokuhle Alicia
+- Mlotshwa, Thandeka Sinethemba
+- Ramuthivheli, Percy
+- Mkhize, Ayanda Siphelele
+- Tembe, Nokubonga Phephile
+- Mnisi, Lethokuhle
+- Sephaka, Siphesihle Ntokozo
+- Sithole, Nosipho Simelokuhle
+- Tambodala, U
+- Maluleka, Luyanda
+- Ngcobo, Andile Vuyani
 
 ---
 
