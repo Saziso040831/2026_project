@@ -1,0 +1,6 @@
+txt
+Flask==2.3.3
+Flask-Mail==0.9.1
+Pillow==10.0.0
+Werkzeug==2.3.7
+gunicorn==21.2.0
