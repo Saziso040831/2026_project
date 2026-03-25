@@ -293,6 +293,114 @@
             font-size: 0.85rem;
         }
 
+        /* Claim Form Styles */
+        .claim-section {
+            background: #1a2a3a;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 1px solid #4a90e2;
+        }
+
+        .claim-section h3 {
+            color: #4a90e2;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #cccccc;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group label i {
+            color: #4a90e2;
+            margin-right: 5px;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            resize: vertical;
+            transition: 0.2s;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .form-group textarea::placeholder {
+            color: #666666;
+        }
+
+        .claim-hint {
+            font-size: 0.75rem;
+            color: #888888;
+            margin-top: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .claim-hint i {
+            color: #ffc107;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3a7bc8;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #4a90e2;
+            color: #4a90e2;
+        }
+
         .flash-messages {
             margin-bottom: 1.5rem;
         }
@@ -454,30 +562,57 @@
                         </div>
                     </div>
 
-                    <!-- No Claim Button for Admin -->
+                    <!-- Claim Section - Only for regular users with available found items -->
                     {% if user.role != 'admin' and item_type == 'found' and item.status == 'available' %}
-                    <div class="action-buttons" style="margin-top: 1rem;">
-                        <button class="btn btn-success" onclick="showClaimForm()">
-                            <i class="fas fa-hand-paper"></i> Claim This Item
-                        </button>
+                    <div class="claim-section">
+                        <h3><i class="fas fa-hand-paper"></i> Claim This Item</h3>
+                        <p style="color: #cccccc; margin-bottom: 1rem;">If you believe this item belongs to you, please provide a valid reason for your claim.</p>
+                        
+                        <form method="POST" action="/claim/found/{{ item.id }}" id="claimForm">
+                            <div class="form-group">
+                                <label><i class="fas fa-pen"></i> Why do you believe this is your item? *</label>
+                                <textarea name="message" id="claimReason" rows="5" required 
+                                    placeholder="Please provide specific details that prove this item belongs to you. For example:
+• Describe unique features, marks, or identifiers
+• When and where you lost the item
+• Any other proof of ownership
+• Describe the condition of the item"></textarea>
+                                <div class="claim-hint">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Provide as much detail as possible. This helps the admin verify your claim.</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label><i class="fas fa-check-circle"></i> I confirm that:</label>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" id="confirmOwnership" required style="width: 18px; height: 18px; accent-color: #4a90e2;">
+                                        <span style="color: #cccccc; font-size: 0.85rem;">This item belongs to me</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" id="confirmTruth" required style="width: 18px; height: 18px; accent-color: #4a90e2;">
+                                        <span style="color: #cccccc; font-size: 0.85rem;">The information I provided is true and accurate</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" id="confirmPenalty" required style="width: 18px; height: 18px; accent-color: #4a90e2;">
+                                        <span style="color: #cccccc; font-size: 0.85rem;">I understand that false claims may result in disciplinary action</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 1rem;">
+                                <i class="fas fa-paper-plane"></i> Submit Claim
+                            </button>
+                        </form>
                     </div>
                     {% endif %}
 
-                    <!-- Claim Form (Only for regular users) -->
-                    {% if user.role != 'admin' and item_type == 'found' and item.status == 'available' %}
-                    <div id="claimForm" class="claim-form" style="display: none;">
-                        <h3><i class="fas fa-file-signature"></i> Submit Claim Request</h3>
-                        <form method="POST" action="/claim/found/{{ item.id }}">
-                            <textarea name="message" rows="4" placeholder="Please explain why this item belongs to you (provide proof of ownership if possible)..." required></textarea>
-                            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane"></i> Submit Claim
-                                </button>
-                                <button type="button" class="btn btn-outline" onclick="hideClaimForm()">
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
+                    <!-- Message for already claimed items -->
+                    {% if user.role != 'admin' and item_type == 'found' and item.status != 'available' %}
+                    <div class="claim-section" style="background: #1a1a1a; border-color: #ffc107;">
+                        <h3 style="color: #ffc107;"><i class="fas fa-info-circle"></i> Not Available</h3>
+                        <p style="color: #cccccc;">This item has already been claimed or is no longer available.</p>
                     </div>
                     {% endif %}
                 </div>
@@ -495,14 +630,47 @@
     </div>
 
     <script>
-        function showClaimForm() {
-            document.getElementById('claimForm').style.display = 'block';
-            document.getElementById('claimForm').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function hideClaimForm() {
-            document.getElementById('claimForm').style.display = 'none';
-        }
+        // Form validation to ensure all checkboxes are checked
+        document.getElementById('claimForm')?.addEventListener('submit', function(e) {
+            const claimReason = document.getElementById('claimReason').value.trim();
+            const confirmOwnership = document.getElementById('confirmOwnership').checked;
+            const confirmTruth = document.getElementById('confirmTruth').checked;
+            const confirmPenalty = document.getElementById('confirmPenalty').checked;
+            
+            if (!claimReason) {
+                e.preventDefault();
+                alert('Please provide a valid reason why this item belongs to you.');
+                document.getElementById('claimReason').focus();
+                return false;
+            }
+            
+            if (claimReason.length < 20) {
+                e.preventDefault();
+                alert('Please provide more details (at least 20 characters). Be specific about why this item belongs to you.');
+                document.getElementById('claimReason').focus();
+                return false;
+            }
+            
+            if (!confirmOwnership) {
+                e.preventDefault();
+                alert('Please confirm that this item belongs to you.');
+                return false;
+            }
+            
+            if (!confirmTruth) {
+                e.preventDefault();
+                alert('Please confirm that the information you provided is true and accurate.');
+                return false;
+            }
+            
+            if (!confirmPenalty) {
+                e.preventDefault();
+                alert('Please confirm that you understand false claims may result in disciplinary action.');
+                return false;
+            }
+            
+            return true;
+        });
     </script>
 </body>
 </html>
