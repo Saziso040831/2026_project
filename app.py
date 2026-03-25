@@ -21,7 +21,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-# Email configuration
+# Email configurations
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -37,7 +37,7 @@ mail = Mail(app)
 os.makedirs(os.path.join(UPLOAD_FOLDER, 'lost'), exist_ok=True)
 os.makedirs(os.path.join(UPLOAD_FOLDER, 'found'), exist_ok=True)
 
-# Admin configuration
+# Admin configurations
 ADMIN_EMAIL = "bayandasaziso6@gmail.com"
 ADMIN_PASSWORD = "S@zirh ngc0bo"
 
@@ -320,7 +320,7 @@ def send_claim_approved_notification(claim_id):
             loser = {'name': claim['lost_owner_name'], 'email': claim['lost_owner_email'], 'phone': claim['lost_owner_phone']}
             item_name = claim['lost_item_name']
         
-        # Send email to loser
+        # Send email to owner
         try:
             subject = f"🎉 Good news! Your lost item has been found - DUT Lost & Found"
             msg = Message(subject=subject, recipients=[loser['email']])
@@ -1117,8 +1117,8 @@ def dashboard():
     )
 
 # ==================== CONTINUED WITH REMAINING ROUTES ====================
-# [The rest of your routes remain the same - matches, admin routes, etc.]
-# I'll continue with the remaining routes...
+# [The rest of the routes remain the same - matches, admin routes, etc.]
+# Continuing with the remaining routes...
 
 @app.route('/my-rewards')
 def my_rewards():
