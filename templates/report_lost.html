@@ -174,6 +174,7 @@
             color: #555555;
         }
 
+        /* Checkbox Wrapper - Updated for disabled state */
         .checkbox-wrapper {
             display: flex;
             align-items: center;
@@ -188,10 +189,45 @@
             width: 18px;
             height: 18px;
             accent-color: #4a90e2;
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper input[type="checkbox"]:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
         }
 
         .checkbox-wrapper label {
             color: #cccccc;
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper label.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Info Box for Reward */
+        .reward-info {
+            background: linear-gradient(135deg, #ffd70020, #1a1a1a);
+            border-left: 4px solid #ffd700;
+            padding: 0.8rem;
+            border-radius: 10px;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .reward-info i {
+            color: #ffd700;
+            font-size: 1rem;
+        }
+
+        .reward-info p {
+            color: #cccccc;
+            font-size: 0.8rem;
+            margin: 0;
         }
 
         /* Campus Selection Dropdown */
@@ -618,12 +654,16 @@
                     </div>
                 </div>
 
-                <!-- Reward Offered -->
+                <!-- Reward Offered - Auto-ticked and disabled -->
                 <div class="input-field">
                     <label><i class="fas fa-gift"></i> Reward</label>
                     <div class="checkbox-wrapper">
-                        <input type="checkbox" name="reward_offered" id="reward" value="yes">
-                        <label for="reward">I am offering a reward for return</label>
+                        <input type="checkbox" name="reward_offered" id="reward" value="yes" checked disabled>
+                        <label for="reward" class="disabled">I am offering a reward for return (Required)</label>
+                    </div>
+                    <div class="reward-info">
+                        <i class="fas fa-gift"></i>
+                        <p>Offering a reward increases the chances of getting your item back! This is a DUT initiative to encourage honesty and community support.</p>
                     </div>
                 </div>
 
@@ -889,7 +929,7 @@
             document.getElementById('file-input').value = '';
         }
 
-        // Form validation - Image is now optional
+        // Form validation
         document.getElementById('reportForm').addEventListener('submit', function(e) {
             const itemName = document.getElementById('item_name').value;
             const category = document.getElementById('main_category').value;
@@ -928,8 +968,6 @@
                 alert('Please specify the location');
                 return;
             }
-
-            // Image validation removed - it's now optional
         });
 
         // Set max date to today
