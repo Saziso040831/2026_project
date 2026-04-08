@@ -561,6 +561,7 @@
                             {% endif %}
                         </div>
                     </div>
+                    
 
                     <!-- Claim Section - Only for regular users with available found items -->
                     {% if user.role != 'admin' and item_type == 'found' and item.status == 'available' %}
@@ -607,6 +608,20 @@
                         </form>
                     </div>
                     {% endif %}
+
+                    <!-- Add this in the item info section -->
+<div class="info-item">
+    <div class="info-label">Pickup Preference</div>
+    <div class="info-value">
+        {% if item.pickup_preference == 'storeroom' %}
+            <i class="fas fa-building"></i> DUT Storeroom Pickup
+            <small style="display: block; color: #4a90e2;">Steve Biko Campus, Building 5 | Mon-Fri 8am-4pm</small>
+        {% else %}
+            <i class="fas fa-handshake"></i> Arrange Meeting with Finder
+            <small style="display: block; color: #4a90e2;">You will receive finder's contact details after claim approval</small>
+        {% endif %}
+    </div>
+</div>
 
                     <!-- Message for already claimed items -->
                     {% if user.role != 'admin' and item_type == 'found' and item.status != 'available' %}
