@@ -696,6 +696,18 @@
                                         <p>{{ claim.lost_item_description[:200] }}{% if claim.lost_item_description|length > 200 %}...{% endif %}</p>
                                     </div>
                                     {% endif %}
+
+                                    <!-- In the claimant's lost item section -->
+<div class="detail-row">
+    <div class="detail-label">Pickup Preference</div>
+    <div class="detail-value">
+        {% if claim.pickup_preference == 'storeroom' %}
+            🏢 DUT Storeroom Pickup
+        {% else %}
+            🤝 Arrange Meeting with Finder
+        {% endif %}
+    </div>
+</div>
                                     
                                     <div class="contact-box">
                                         <div class="detail-label">Claimant's Contact</div>
