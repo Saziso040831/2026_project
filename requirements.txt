@@ -2,3 +2,4 @@
 Flask-Mail==0.9.1
 Werkzeug==2.3.7
 gunicorn==21.2.0
+Pillow==10.4.0
