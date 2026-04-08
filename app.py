@@ -69,26 +69,34 @@ def init_db():
     
     # Lost Items table
     c.execute('''CREATE TABLE IF NOT EXISTS lost_items
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  user_id INTEGER,
-                  item_name TEXT NOT NULL,
-                  category TEXT NOT NULL,
-                  description TEXT NOT NULL,
-                  date_lost DATE NOT NULL,
-                  location TEXT NOT NULL,
-                  latitude REAL,
-                  longitude REAL,
-                  contact_name TEXT NOT NULL,
-                  contact_email TEXT NOT NULL,
-                  contact_phone TEXT,
-                  reward_offered BOOLEAN DEFAULT 0,
-                  image_path TEXT,
-                  status TEXT DEFAULT 'pending',
-                  resolved_at TIMESTAMP,
-                  resolved_by INTEGER,
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  FOREIGN KEY (user_id) REFERENCES users(id),
-                  FOREIGN KEY (resolved_by) REFERENCES users(id))''')
+             (id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id INTEGER,
+              item_name TEXT NOT NULL,
+              category TEXT NOT NULL,
+              description TEXT NOT NULL,
+              date_lost DATE NOT NULL,
+              location TEXT NOT NULL,
+              latitude REAL,
+              longitude REAL,
+              contact_name TEXT NOT NULL,
+              contact_email TEXT NOT NULL,
+              contact_phone TEXT,
+              reward_offered BOOLEAN DEFAULT 0,
+              image_path TEXT,
+              status TEXT DEFAULT 'pending',
+              pickup_preference TEXT DEFAULT 'storeroom',
+              resolved_at TIMESTAMP,
+              resolved_by INTEGER,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (user_id) REFERENCES users(id),
+              FOREIGN KEY (resolved_by) REFERENCES users(id))''')
+    
+    c.execute("PRAGMA table_info(lost_items)")
+    columns = [col[1] for col in c.fetchall()]
+    if 'pickup_preference' not in columns:
+        c.execute("ALTER TABLE lost_items ADD COLUMN pickup_preference TEXT DEFAULT 'storeroom'")
+        print("Added pickup_preference column to lost_items table")
+    
     
     # Found Items table
     c.execute('''CREATE TABLE IF NOT EXISTS found_items
@@ -357,6 +365,36 @@ Please contact them to arrange return.
             conn.close()
         print(f"Error: {e}")
         return False
+
+        def send_claim_approved_notification(claim_id):
+    # ... existing code ...
+    
+    # Get pickup preference from the lost item
+            lost_item = conn.execute("SELECT pickup_preference FROM lost_items WHERE id = ?", 
+                              (lost_items['id'],)).fetchone() if lost_items else None
+    
+    pickup_preference = lost_item['pickup_preference'] if lost_item else 'storeroom'
+    
+    # Add pickup instructions to the email
+    if pickup_preference == 'storeroom':
+        pickup_instructions = """
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #4a90e2;">📦 Pickup Instructions</h3>
+            <p>Your item will be kept at the DUT Central Storeroom.</p>
+            <p><strong>Location:</strong> Steve Biko Campus, Building 5</p>
+            <p><strong>Hours:</strong> Monday - Friday, 8:00 AM - 4:00 PM</p>
+            <p><strong>What to bring:</strong> Your student ID card and this email confirmation</p>
+        </div>
+        """
+    else:
+        pickup_instructions = """
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #28a745;">🤝 Meeting Instructions</h3>
+            <p>Please contact the finder directly to arrange pickup:</p>
+            <p><strong>Finder's Contact:</strong> {finder['name']} - {finder['email']}</p>
+            <p><strong>Safety Tip:</strong> Meet in a safe, public place on campus (e.g., Student Center, Library entrance)</p>
+        </div>
+        """.format(finder=finder)
 
 def send_claim_rejected_email(claimant, item, claim_message):
     """Send rejection email to claimant when claim is rejected"""
@@ -1667,26 +1705,73 @@ def admin_history():
     conn = get_db()
     now = datetime.now()
     
-    history_items = conn.execute('''
+    # Get search parameters
+    search_query = request.args.get('search', '').strip()
+    filter_type = request.args.get('filter_type', 'all')
+    sort_by = request.args.get('sort_by', 'newest')
+    
+    # Build the query with search
+    sql = '''
         SELECT 
             h.*,
+            lost_user.id as lost_user_id,
             lost_user.full_name as lost_by_name,
+            lost_user.email as lost_by_email,
+            found_user.id as found_user_id,
             found_user.full_name as found_by_name,
+            found_user.email as found_by_email,
+            claimed_user.id as claimed_user_id,
             claimed_user.full_name as claimed_by_name,
+            claimed_user.email as claimed_by_email,
             admin_user.full_name as resolved_by_name
         FROM item_history h
         LEFT JOIN users lost_user ON h.lost_by_id = lost_user.id
         LEFT JOIN users found_user ON h.found_by_id = found_user.id
         LEFT JOIN users claimed_user ON h.claimed_by_id = claimed_user.id
         LEFT JOIN users admin_user ON h.resolved_by = admin_user.id
-        ORDER BY h.resolved_at DESC
-        LIMIT 100
-    ''').fetchall()
+        WHERE 1=1
+    '''
+    params = []
     
+    # Add search condition
+    if search_query:
+        search_term = f'%{search_query}%'
+        sql += ''' AND (
+            h.item_name LIKE ? OR 
+            h.category LIKE ? OR 
+            lost_user.full_name LIKE ? OR 
+            lost_user.email LIKE ? OR
+            found_user.full_name LIKE ? OR 
+            found_user.email LIKE ? OR
+            claimed_user.full_name LIKE ? OR 
+            claimed_user.email LIKE ?
+        )'''
+        params.extend([search_term, search_term, search_term, search_term, 
+                       search_term, search_term, search_term, search_term])
+    
+    # Add filter by type
+    if filter_type == 'lost':
+        sql += " AND h.item_type = 'lost'"
+    elif filter_type == 'found':
+        sql += " AND h.item_type = 'found'"
+    
+    # Add sorting
+    if sort_by == 'oldest':
+        sql += " ORDER BY h.resolved_at ASC"
+    else:
+        sql += " ORDER BY h.resolved_at DESC"
+    
+    # Limit results
+    sql += " LIMIT 200"
+    
+    history_items = conn.execute(sql, params).fetchall()
+    
+    # Get statistics
     total_resolved = conn.execute("SELECT COUNT(*) as count FROM item_history").fetchone()['count']
     total_lost_resolved = conn.execute("SELECT COUNT(*) as count FROM item_history WHERE item_type = 'lost'").fetchone()['count']
     total_found_resolved = conn.execute("SELECT COUNT(*) as count FROM item_history WHERE item_type = 'found'").fetchone()['count']
     
+    # Get counts for sidebar badges
     total_lost = conn.execute("SELECT COUNT(*) as count FROM lost_items").fetchone()['count']
     total_found = conn.execute("SELECT COUNT(*) as count FROM found_items").fetchone()['count']
     pending_claims = conn.execute("SELECT COUNT(*) as count FROM claims WHERE status = 'pending'").fetchone()['count']
@@ -1704,6 +1789,9 @@ def admin_history():
                          total_found=total_found,
                          pending_claims=pending_claims,
                          resolved_count=resolved_count,
+                         search_query=search_query,
+                         filter_type=filter_type,
+                         sort_by=sort_by,
                          now=now)
 
 @app.route('/admin/claim/<int:claim_id>/<string:action>', methods=['POST'])
@@ -1981,6 +2069,7 @@ def report_lost():
             contact_email = request.form['contact_email']
             contact_phone = request.form.get('contact_phone', '')
             reward_offered = 1 if request.form.get('reward_offered') else 0
+            pickup_preference = request.form.get('pickup_preference', 'storeroom')
             
             image_path = None
             if 'image' in request.files:
@@ -1993,10 +2082,10 @@ def report_lost():
             conn = get_db()
             conn.execute('''INSERT INTO lost_items 
                             (user_id, item_name, category, description, date_lost, location,
-                             contact_name, contact_email, contact_phone, reward_offered, image_path)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                             contact_name, contact_email, contact_phone, reward_offered, image_path, pickup_preference)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                          (user_id, item_name, category, description, date_lost, location,
-                          contact_name, contact_email, contact_phone, reward_offered, image_path))
+                          contact_name, contact_email, contact_phone, reward_offered, image_path, pickup_preference))
             conn.commit()
             conn.close()
             
