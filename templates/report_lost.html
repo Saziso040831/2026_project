@@ -174,6 +174,88 @@
             color: #555555;
         }
 
+        /* Pickup Options Styles */
+.pickup-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.pickup-option {
+    background: #1a1a1a;
+    border: 2px solid #333333;
+    border-radius: 15px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.pickup-option:hover {
+    border-color: #4a90e2;
+    background: #222222;
+    transform: translateY(-2px);
+}
+
+.pickup-option.selected {
+    border-color: #4a90e2;
+    background: #1a2a3a;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+}
+
+.pickup-option-icon {
+    width: 50px;
+    height: 50px;
+    background: #222222;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #4a90e2;
+    flex-shrink: 0;
+}
+
+.pickup-option-content {
+    flex: 1;
+}
+
+.pickup-option-content h4 {
+    color: #ffffff;
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+}
+
+.pickup-option-content p {
+    color: #aaaaaa;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.pickup-details {
+    font-size: 0.7rem;
+    color: #4a90e2;
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pickup-details i {
+    width: 16px;
+    font-size: 0.7rem;
+}
+
+@media (max-width: 768px) {
+    .pickup-options {
+        grid-template-columns: 1fr;
+    }
+}
+
         /* Checkbox Wrapper - Updated for disabled state */
         .checkbox-wrapper {
             display: flex;
@@ -667,6 +749,47 @@
                     </div>
                 </div>
 
+                <!-- Add this after the Reward Offered section -->
+<div class="input-field full-width">
+    <label><i class="fas fa-truck"></i> Pickup Preference *</label>
+    <div class="pickup-options">
+        <div class="pickup-option" onclick="selectPickup('storeroom')" data-value="storeroom">
+            <div class="pickup-option-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="pickup-option-content">
+                <h4>DUT Storeroom Pickup</h4>
+                <p>Item will be kept at the DUT central storeroom. You can collect it during working hours.</p>
+                <div class="pickup-details">
+                    <i class="fas fa-clock"></i> Mon-Fri: 8:00 AM - 4:00 PM
+                </div>
+                <div class="pickup-details">
+                    <i class="fas fa-map-marker-alt"></i> Steve Biko Campus, Building 5
+                </div>
+            </div>
+        </div>
+        <div class="pickup-option" onclick="selectPickup('meeting')" data-value="meeting">
+            <div class="pickup-option-icon">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <div class="pickup-option-content">
+                <h4>Arrange Meeting with Finder</h4>
+                <p>You will arrange a direct meeting with the person who found your item.</p>
+                <div class="pickup-details">
+                    <i class="fas fa-info-circle"></i> You'll receive the finder's contact details
+                </div>
+                <div class="pickup-details">
+                    <i class="fas fa-shield-alt"></i> Meet in a safe, public place on campus
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" name="pickup_preference" id="pickup_preference" required>
+    <div id="pickup_error" class="validation-message error" style="display: none; margin-top: 10px;">
+        <i class="fas fa-exclamation-circle"></i> Please select a pickup preference
+    </div>
+</div>
+
                 <!-- Image Upload - Simplified and Optional -->
                 <div class="input-field full-width">
                     <label><i class="fas fa-image"></i> Upload Photo (Optional)</label>
@@ -928,6 +1051,76 @@
             document.getElementById('file-name').style.display = 'none';
             document.getElementById('file-input').value = '';
         }
+
+        // Pickup preference selection
+function selectPickup(value) {
+    // Remove selected class from all options
+    document.querySelectorAll('.pickup-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked option
+    const selectedOption = document.querySelector(`.pickup-option[data-value="${value}"]`);
+    if (selectedOption) {
+        selectedOption.classList.add('selected');
+    }
+    
+    // Set hidden input value
+    document.getElementById('pickup_preference').value = value;
+    
+    // Hide error if shown
+    document.getElementById('pickup_error').style.display = 'none';
+}
+
+// Update form validation
+document.getElementById('reportForm').addEventListener('submit', function(e) {
+    const itemName = document.getElementById('item_name').value;
+    const category = document.getElementById('main_category').value;
+    const campus = document.getElementById('campus_select').value;
+    const otherLocation = document.getElementById('other_location_text').value;
+    const pickupPreference = document.getElementById('pickup_preference').value;
+    
+    if (!category) {
+        e.preventDefault();
+        alert('Please select a category');
+        return;
+    }
+
+    if (category !== 'other' && !itemName) {
+        e.preventDefault();
+        alert('Please select an item from the list');
+        return;
+    }
+
+    if (category === 'other') {
+        const customItem = document.getElementById('custom_item').value;
+        if (!customItem) {
+            e.preventDefault();
+            alert('Please specify the item you lost');
+            return;
+        }
+    }
+
+    if (!campus) {
+        e.preventDefault();
+        alert('Please select a campus');
+        return;
+    }
+
+    if (campus === 'Other Location' && !otherLocation.trim()) {
+        e.preventDefault();
+        alert('Please specify the location');
+        return;
+    }
+    
+    // Validate pickup preference
+    if (!pickupPreference) {
+        e.preventDefault();
+        document.getElementById('pickup_error').style.display = 'block';
+        document.getElementById('pickup_error').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+});
 
         // Form validation
         document.getElementById('reportForm').addEventListener('submit', function(e) {
